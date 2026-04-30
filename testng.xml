@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="Full_UAT_Suite" verbose="1">
+    <test name="Initial_Dashboard_Check">
+        <classes>
+            <class name="com.vwo.app.DashboardTests"/>
+        </classes>
+    </test>
+
+    <test name="Full_Regression_Pack">
+        <classes>
+            <class name="com.vwo.app.DashboardTests"/>
+            <class name="com.vwo.app.LoginPageTests"/>
+        </classes>
+    </test>
+</suite>

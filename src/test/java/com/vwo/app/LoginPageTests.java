@@ -1,5 +1,6 @@
 package com.vwo.app;
 
+import com.vwo.utilities.ConfigManager;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -19,6 +20,7 @@ public class LoginPageTests extends BaseTest {
     public void beforeMethod() {
         context = browser.newContext();
         page = context.newPage();
+        configManager = ConfigManager.getInstance();
         page.navigate(configManager.getProperty("app.url"));
     }
 

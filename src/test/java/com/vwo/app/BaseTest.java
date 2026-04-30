@@ -19,7 +19,6 @@ public class BaseTest {
 
     @BeforeSuite
     public void beforeSuite() {
-        configManager = ConfigManager.getInstance();
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
     }
@@ -28,6 +27,7 @@ public class BaseTest {
     public void beforeTest() {
         BrowserContext tempContext = browser.newContext();
         page = tempContext.newPage();
+        configManager = ConfigManager.getInstance();
         page.navigate(configManager.getProperty("app.url"));
 
         login();
