@@ -1,16 +1,15 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
 <suite name="Full_UAT_Suite" verbose="1">
-    <test name="Initial_Dashboard_Check">
+    <test name="Homepage_Tests">
         <classes>
-            <class name="com.vwo.app.DashboardTests"/>
+            <class name="ro.carrefour.ucare.app.HomePageTests"/>
         </classes>
     </test>
 
-    <test name="Full_Regression_Pack">
+    <test name="Item360_Tests">
         <classes>
-            <class name="com.vwo.app.DashboardTests"/>
-            <class name="com.vwo.app.LoginPageTests"/>
+            <class name="ro.carrefour.ucare.app.item360.Item360Tests"/>
         </classes>
     </test>
 </suite>

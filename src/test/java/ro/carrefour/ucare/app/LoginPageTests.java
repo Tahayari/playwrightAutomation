@@ -1,6 +1,6 @@
-package com.vwo.app;
+package ro.carrefour.ucare.app;
 
-import com.vwo.utilities.ConfigManager;
+import ro.carrefour.ucare.utilities.ConfigManager;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -27,14 +27,8 @@ public class LoginPageTests extends BaseTest {
     @Test()
     public void loginPage_verifyLoginButton() {
         loginPage = new LoginPage(page);
-        assertThat(page.locator(loginPage.loginButton)).isVisible();
-    }
-
-    @Test(groups = "no-auth")
-    public void loginPage_loginWithWrongCredentials() {
-        loginPage = new LoginPage(page);
-        page.click(loginPage.loginButton);
-        assertThat(page.locator(loginPage.invalidCredentialsMsg)).isVisible();
+        page.waitForURL("**ppd.np.idp.carrefour.com**");
+        assertThat(page.locator(loginPage.signInButton)).isVisible();
     }
 
 }

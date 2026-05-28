@@ -1,4 +1,4 @@
-package com.vwo.utilities;
+package ro.carrefour.ucare.utilities;
 
 import java.io.IOException;
 import java.io.InputStream;
