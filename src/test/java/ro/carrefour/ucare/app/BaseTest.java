@@ -2,13 +2,11 @@ package ro.carrefour.ucare.app;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
-import com.microsoft.playwright.options.Geolocation;
 import ro.carrefour.ucare.utilities.ConfigManager;
 import org.testng.annotations.*;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -27,7 +25,6 @@ public class BaseTest {
     private final int MOBILE_WIDTH = 360;
     private final int MOBILE_HEIGHT = 720;
     private final double MOBILE_SCALE_FACTOR = 2.0;
-    private final Geolocation GEO_COORDINATES = new Geolocation(44.439, 26.0963);
 
     @BeforeSuite
     public void beforeSuite() {
@@ -39,8 +36,6 @@ public class BaseTest {
 
         // 1. Perform Login ONCE for the entire Suite
         BrowserContext tempContext = browser.newContext(new Browser.NewContextOptions()
-                .setPermissions(Collections.singletonList("geolocation"))
-                .setGeolocation(GEO_COORDINATES)
                 .setUserAgent(MOBILE_USER_AGENT)
                 .setViewportSize(MOBILE_WIDTH, MOBILE_HEIGHT)
                 .setDeviceScaleFactor(MOBILE_SCALE_FACTOR)
@@ -75,8 +70,6 @@ public class BaseTest {
 
         context = browser.newContext(new Browser.NewContextOptions()
                 .setStorageStatePath(Paths.get(AUTH_STATE_PATH))
-                .setPermissions(Collections.singletonList("geolocation"))
-                .setGeolocation(GEO_COORDINATES)
                 .setUserAgent(MOBILE_USER_AGENT)
                 .setViewportSize(MOBILE_WIDTH, MOBILE_HEIGHT)
                 .setDeviceScaleFactor(MOBILE_SCALE_FACTOR)
