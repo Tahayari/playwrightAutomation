@@ -33,12 +33,11 @@ public class BaseTest {
     public void beforeSuite() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
-
         PlaywrightAssertions.setDefaultAssertionTimeout(GLOBAL_TIMEOUT_MS);
-    }
 
-    @BeforeTest
-    public void beforeTest() {
+        configManager = ConfigManager.getInstance();
+
+        // 1. Perform Login ONCE for the entire Suite
         BrowserContext tempContext = browser.newContext(new Browser.NewContextOptions()
                 .setPermissions(Collections.singletonList("geolocation"))
                 .setGeolocation(GEO_COORDINATES)
@@ -49,19 +48,31 @@ public class BaseTest {
                 .setHasTouch(true));
         tempContext.setDefaultTimeout(GLOBAL_TIMEOUT_MS);
 
-        page = tempContext.newPage();
-        configManager = ConfigManager.getInstance();
-        page.navigate(configManager.getProperty("app.url"));
+        Page tempPage = tempContext.newPage();
+        tempPage.navigate(configManager.getProperty("app.url"));
 
-        login();
+        // Direct login call using the temporary setup page
+        LoginPage loginPage = new LoginPage(tempPage);
+        HomePage homePageInit = loginPage.login(configManager.getProperty("app.username"),
+                configManager.getProperty("app.password"));
+        assertThat(tempPage.locator(homePageInit.homeFooterMenu)).isVisible();
+        assertThat(tempPage.locator(homePageInit.stockFooterMenu)).isVisible();
+
+        // Save state
         tempContext.storageState(new BrowserContext.StorageStateOptions().setPath(Paths.get(AUTH_STATE_PATH)));
 
-        page.close();
+        tempPage.close();
         tempContext.close();
+    }
+
+    @BeforeTest
+    public void beforeTest() {
     }
 
     @BeforeMethod
     public void beforeMethod() {
+        configManager = ConfigManager.getInstance();
+
         context = browser.newContext(new Browser.NewContextOptions()
                 .setStorageStatePath(Paths.get(AUTH_STATE_PATH))
                 .setPermissions(Collections.singletonList("geolocation"))
@@ -79,18 +90,18 @@ public class BaseTest {
 
     @AfterMethod
     public void afterMethod() {
-        page.close();
+        if (page != null) page.close();
+        if (context != null) context.close();
     }
 
     @AfterTest
     public void afterTest() {
-        context.close();
     }
 
     @AfterSuite
     public void afterSuite() {
-        browser.close();
-        playwright.close();
+        if (browser != null) browser.close();
+        if (playwright != null) playwright.close();
         clearAuthStateFile();
     }
 
