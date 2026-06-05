@@ -1,0 +1,149 @@
+package ro.carrefour.ucare.app;
+
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.assertions.PlaywrightAssertions;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import org.testng.annotations.*;
+import ro.carrefour.ucare.utilities.ConfigManager;
+import ro.carrefour.ucare.utilities.PlaywrightFactory;
+
+public class BaseTest {
+  protected BrowserContext context;
+  protected Page page;
+  protected ConfigManager configManager;
+  protected HomePage homePage;
+  protected Item360Page item360Page;
+
+  private static final String AUTH_STATE_PATH = "./src/main/resources/storageSession.json";
+  private static final double GLOBAL_TIMEOUT_MS = 20000;
+
+  @BeforeSuite
+  public void beforeSuite() {
+    PlaywrightFactory.initBrowser();
+    PlaywrightAssertions.setDefaultAssertionTimeout(GLOBAL_TIMEOUT_MS);
+  }
+
+  @BeforeTest
+  public void beforeTest() {}
+
+  @BeforeMethod
+  public void beforeMethod() {
+
+    configManager = ConfigManager.getInstance();
+
+    boolean sessionExists = hasValidAuthState();
+
+    context =
+        PlaywrightFactory.createMobileContext(
+            sessionExists ? AUTH_STATE_PATH : null, GLOBAL_TIMEOUT_MS);
+
+    page = context.newPage();
+    page.navigate(configManager.getProperty("app.url"));
+
+    if (!sessionExists) {
+      performLoginAndSaveState();
+    }
+
+    homePage = new HomePage(page);
+    item360Page = new Item360Page(page);
+  }
+
+  @AfterMethod
+  public void afterMethod() {
+    if (page != null) page.close();
+    if (context != null) context.close();
+  }
+
+  @AfterSuite
+  public void afterSuite() {
+    PlaywrightFactory.closeBrowser();
+    clearAuthStateFile();
+  }
+
+  // ==========================================
+  // PRIVATE HELPERS
+  // ==========================================
+
+  /**
+   * Returns true only when the auth-state file exists and contains a real session (i.e. is not
+   * missing, empty, or the blank-slate "{}" written by clearAuthStateFile).
+   */
+  private boolean hasValidAuthState() {
+    java.nio.file.Path path = Paths.get(AUTH_STATE_PATH);
+    if (!Files.exists(path)) return false;
+    try {
+      String content = new String(Files.readAllBytes(path)).trim();
+      return !content.isEmpty() && !content.equals("{}");
+    } catch (IOException e) {
+      System.err.println("Warning: Could not read auth state file: " + e.getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Executes the login sequence on the current live page, verifies the result, then serialises the
+   * browser session to disk for all subsequent tests. Throws RuntimeException on save failure —
+   * auth loss is a suite-breaking event.
+   */
+  private void performLoginAndSaveState() {
+
+    login();
+
+    try {
+      Files.createDirectories(Paths.get(AUTH_STATE_PATH).getParent());
+      context.storageState(
+          new BrowserContext.StorageStateOptions().setPath(Paths.get(AUTH_STATE_PATH)));
+    } catch (IOException e) {
+      throw new RuntimeException("Critical: failed to save authentication session.", e);
+    }
+  }
+
+  /**
+   * Resets the auth-state file to a blank JSON object so that the next suite run always starts with
+   * a clean login, preventing stale/expired sessions.
+   */
+  private void clearAuthStateFile() {
+    try {
+      Files.write(Paths.get(AUTH_STATE_PATH), "{}".getBytes());
+    } catch (IOException e) {
+      System.err.println("Warning: failed to clear auth state file: " + e.getMessage());
+    }
+  }
+
+  // ==========================================
+  // PROTECTED HELPERS (for subclasses)
+  // ==========================================
+
+  private void login() {
+    LoginPage loginPage = new LoginPage(page);
+    HomePage homePage =
+        loginPage.login(
+            configManager.getProperty("app.username"), configManager.getProperty("app.password"));
+    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
+    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
+  }
+
+  protected void verifyHomePage() {
+    homePage = new HomePage(page);
+    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
+    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
+    assertThat(page.locator(homePage.meFooterMenu)).isVisible();
+    assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
+    assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+  }
+
+  protected void searchProduct(String id) {
+    assertThat(page.locator(homePage.searchInputID)).isVisible();
+    page.locator(homePage.searchInputID).fill(id);
+    page.locator(homePage.searchInputID).press("Enter");
+
+    item360Page = new Item360Page(page);
+    assertThat(page.locator(item360Page.productImageID)).isVisible();
+    assertThat(page.locator(item360Page.productBrandID)).isVisible();
+    assertThat(page.locator(item360Page.productName)).isVisible();
+  }
+}
