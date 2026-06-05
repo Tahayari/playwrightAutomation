@@ -3,6 +3,7 @@
 <suite name="Full_UAT_Suite" verbose="1">
     <test name="Homepage_Tests">
         <classes>
+            <class name="ro.carrefour.ucare.app.item360.Item360Tests"/>
             <class name="ro.carrefour.ucare.app.HomePageTests"/>
         </classes>
     </test>
