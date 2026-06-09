@@ -6,7 +6,9 @@ import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.testng.ITestResult;
 import org.testng.annotations.*;
 import ro.carrefour.ucare.utilities.ConfigManager;
 import ro.carrefour.ucare.utilities.PlaywrightFactory;
@@ -34,12 +36,15 @@ public class BaseTest {
   public void beforeMethod() {
 
     configManager = ConfigManager.getInstance();
-
     boolean sessionExists = hasValidAuthState();
 
     context =
         PlaywrightFactory.createMobileContext(
             sessionExists ? AUTH_STATE_PATH : null, GLOBAL_TIMEOUT_MS);
+
+    context
+        .tracing()
+        .start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true));
 
     page = context.newPage();
     page.navigate(configManager.getProperty("app.url"));
@@ -53,9 +58,29 @@ public class BaseTest {
   }
 
   @AfterMethod
-  public void afterMethod() {
-    if (page != null) page.close();
-    if (context != null) context.close();
+  public void afterMethod(ITestResult result) {
+    String testId =
+        result.getTestClass().getRealClass().getSimpleName()
+            + "_"
+            + result.getMethod().getMethodName()
+            + "_"
+            + System.currentTimeMillis();
+
+    if (result.getStatus() == ITestResult.FAILURE) {
+      captureScreenshot(testId);
+      saveTrace(testId); // also stops tracing with save
+    } else {
+      discardTrace(); // stops tracing, no file written
+    }
+
+    if (page != null) {
+      page.close();
+      page = null;
+    }
+    if (context != null) {
+      context.close();
+      context = null;
+    }
   }
 
   @AfterSuite
@@ -111,6 +136,37 @@ public class BaseTest {
       Files.write(Paths.get(AUTH_STATE_PATH), "{}".getBytes());
     } catch (IOException e) {
       System.err.println("Warning: failed to clear auth state file: " + e.getMessage());
+    }
+  }
+
+  private void captureScreenshot(String testId) {
+    if (page == null) return;
+    try {
+      Path dir = Paths.get("target/evidence/screenshots");
+      Files.createDirectories(dir);
+      page.screenshot(
+          new Page.ScreenshotOptions().setFullPage(true).setPath(dir.resolve(testId + ".png")));
+    } catch (Exception e) {
+      System.err.println("Warning: screenshot capture failed — " + e.getMessage());
+    }
+  }
+
+  private void saveTrace(String testId) {
+    if (context == null) return;
+    try {
+      Path dir = Paths.get("target/evidence/traces");
+      Files.createDirectories(dir);
+      context.tracing().stop(new Tracing.StopOptions().setPath(dir.resolve(testId + ".zip")));
+    } catch (Exception e) {
+      System.err.println("Warning: trace save failed — " + e.getMessage());
+    }
+  }
+
+  private void discardTrace() {
+    if (context == null) return;
+    try {
+      context.tracing().stop(); // no path = no file written
+    } catch (Exception ignored) {
     }
   }
 
