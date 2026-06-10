@@ -57,8 +57,4 @@ public class AuthStateManager {
       System.err.println("Warning: failed to clear auth state file — " + e.getMessage());
     }
   }
-
-  public String getAuthStatePath() {
-    return authStatePath;
-  }
 }
