@@ -4,6 +4,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
+import io.qameta.allure.Step;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -141,6 +142,7 @@ public class BaseTest {
   // PROTECTED HELPERS (for subclasses)
   // ==========================================
 
+  @Step("Verify home page is fully loaded")
   protected void verifyHomePage() {
     assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
     assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
@@ -149,6 +151,7 @@ public class BaseTest {
     assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
   }
 
+  @Step("Search for product: {id}")
   protected void searchProduct(String id) {
     assertThat(page.locator(homePage.searchInputID)).isVisible();
     page.locator(homePage.searchInputID).fill(id);
