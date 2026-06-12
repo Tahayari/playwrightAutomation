@@ -10,7 +10,8 @@ import org.testng.annotations.Test;
 @Feature("Dashboard")
 public class HomePageTests extends BaseTest {
 
-  @Description("Verifies that the home page is displayed correctly and all main elements are visible")
+  @Description(
+      "Verifies that the home page is displayed correctly and all main elements are visible")
   @Test
   public void navigateTo_homePage_test() {
     verifyHomePage();
@@ -30,5 +31,4 @@ public class HomePageTests extends BaseTest {
     page.locator(homePage.logoutID).click();
     page.waitForURL("**ppd.np.idp.carrefour.com**");
   }
-
 }

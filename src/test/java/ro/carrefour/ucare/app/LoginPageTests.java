@@ -11,7 +11,8 @@ public class LoginPageTests extends BaseTest {
 
   LoginPage loginPage;
 
-  @Description("Verifies that the login page is displayed correctly and the login button is visible")
+  @Description(
+      "Verifies that the login page is displayed correctly and the login button is visible")
   @Test()
   public void loginPage_verifyLoginButton() {
     loginPage = new LoginPage(page);
