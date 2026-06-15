@@ -17,9 +17,10 @@
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <testng.version>7.11.0</testng.version>
         <allure.version>2.27.0</allure.version>
-        <allure-maven.version>2.12.0</allure-maven.version>
+        <allure-maven.version>2.13.0</allure-maven.version>
         <aspectj.version>1.9.21</aspectj.version>
         <allure.results.dir>${project.build.directory}/allure-results</allure.results.dir>
+        <device>Desktop</device>
     </properties>
 
     <build>
@@ -74,6 +75,39 @@
                     -->
                     <resultsDirectory>${allure.results.dir}</resultsDirectory>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-allure-environment</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
