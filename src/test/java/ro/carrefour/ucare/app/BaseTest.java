@@ -35,7 +35,7 @@ public class BaseTest {
   private static final AuthStateManager authStateManager = new AuthStateManager(AUTH_STATE_PATH);
 
   // Per-test-method — wraps the current page and context for failure capture
-  private EvidenceManager evidenceManager;
+  protected EvidenceManager evidenceManager;
 
   // ==========================================
   // LIFECYCLE
@@ -165,7 +165,7 @@ public class BaseTest {
   //  @Step("Search for product: {id}")
   protected void searchProduct(String id) {
     step(
-        "Search for product: {id}",
+        "Search for product with ID: " + id,
         () -> {
           step("Verify if search input is displayed");
           assertThat(page.locator(homePage.searchInputID)).isVisible();

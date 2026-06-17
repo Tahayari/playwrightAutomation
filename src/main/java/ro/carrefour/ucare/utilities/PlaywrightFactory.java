@@ -51,8 +51,10 @@ public class PlaywrightFactory {
       System.out.println("Running emulation for device: " + deviceName);
     } else {
       // 4. Fallback: Standard Desktop defaults
-      options = new Browser.NewContextOptions()
+      options =
+          new Browser.NewContextOptions()
               .setViewportSize(360, 720)
+              .setPermissions(Collections.singletonList("geolocation"))
               .setGeolocation(geolocation.latitude, geolocation.longitude)
               .setDeviceScaleFactor(2.0)
               .setIsMobile(true);

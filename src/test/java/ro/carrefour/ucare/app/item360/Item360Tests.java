@@ -26,6 +26,7 @@ public class Item360Tests extends BaseTest {
     searchProduct("10005001");
   }
 
+  @Feature("Item360")
   @Description("Verifies that searching by a valid product ID returns correct product details")
   @Test
   public void navigateTo_item360Page_3() {
