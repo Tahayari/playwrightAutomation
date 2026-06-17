@@ -1,6 +1,7 @@
 package ro.carrefour.ucare.app;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static io.qameta.allure.Allure.step;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
@@ -10,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
+import ro.carrefour.ucare.app.me.MePage;
+import ro.carrefour.ucare.app.stock.StockPage;
 import ro.carrefour.ucare.utilities.AuthStateManager;
 import ro.carrefour.ucare.utilities.ConfigManager;
 import ro.carrefour.ucare.utilities.EvidenceManager;
@@ -22,6 +25,8 @@ public class BaseTest {
   protected ConfigManager configManager;
   protected HomePage homePage;
   protected Item360Page item360Page;
+  protected StockPage stockPage;
+  protected MePage mePage;
 
   private static final String AUTH_STATE_PATH = "./src/main/resources/storageSession.json";
   private static final double GLOBAL_TIMEOUT_MS = 20000;
@@ -61,6 +66,7 @@ public class BaseTest {
         .tracing()
         .start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true));
 
+    step("Navigate to Dashboard page");
     page = context.newPage();
     page.navigate(configManager.getProperty("app.url"));
 
@@ -71,7 +77,7 @@ public class BaseTest {
 
   @AfterMethod
   public void afterMethod(ITestResult result) {
-    // Guard against @BeforeMethod failing before evidenceManager was initialised
+    // Guard against @BeforeMethod failing before evidenceManager was initialized
     if (evidenceManager != null) {
       String testId =
           result.getTestClass().getRealClass().getSimpleName()
@@ -144,20 +150,78 @@ public class BaseTest {
 
   @Step("Verify home page is fully loaded")
   protected void verifyHomePage() {
-    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.meFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+    step(
+        "Verify home page main elements are visible",
+        () -> {
+          assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.meFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+          step("Main tabs are displayed");
+        });
   }
 
-  @Step("Search for product: {id}")
+  //  @Step("Search for product: {id}")
   protected void searchProduct(String id) {
-    assertThat(page.locator(homePage.searchInputID)).isVisible();
-    page.locator(homePage.searchInputID).fill(id);
-    page.locator(homePage.searchInputID).press("Enter");
-    assertThat(page.locator(item360Page.productImageID)).isVisible();
-    assertThat(page.locator(item360Page.productBrandID)).isVisible();
-    assertThat(page.locator(item360Page.productName)).isVisible();
+    step(
+        "Search for product: {id}",
+        () -> {
+          step("Verify if search input is displayed");
+          assertThat(page.locator(homePage.searchInputID)).isVisible();
+
+          step("Enter product id {id}");
+          page.locator(homePage.searchInputID).fill(id);
+          page.locator(homePage.searchInputID).press("Enter");
+
+          step("Verify if item360 page is displayed");
+          assertThat(page.locator(item360Page.productImageID)).isVisible();
+          assertThat(page.locator(item360Page.productBrandID)).isVisible();
+          assertThat(page.locator(item360Page.productName)).isVisible();
+          step("Item360 page is displayed");
+        });
+  }
+
+  protected void navigateToStockPage() {
+    stockPage = new StockPage(page);
+    step(
+        "Navigate to Stock Page",
+        () -> {
+          page.locator(homePage.stockFooterMenu).click();
+          step("Verify if Stock page is displayed");
+          assertThat(page.locator(stockPage.stockPageTitle)).isVisible();
+          step("Stock page is displayed");
+
+          assertThat(page.locator(stockPage.oosCard)).isVisible();
+          assertThat(page.locator(stockPage.negativeStockCard)).isVisible();
+          assertThat(page.locator(stockPage.regularOrderOption)).isVisible();
+          assertThat(page.locator(stockPage.orderValidationOption)).isVisible();
+          assertThat(page.locator(stockPage.expiringProductsOption)).isVisible();
+          assertThat(page.locator(stockPage.outOfShelfOption)).isVisible();
+          assertThat(page.locator(stockPage.stockMovementsOption)).isVisible();
+          assertThat(page.locator(stockPage.stockTransferOption)).isVisible();
+          assertThat(page.locator(stockPage.palletsOption)).isVisible();
+          assertThat(page.locator(stockPage.generalInventoryOption)).isVisible();
+          assertThat(page.locator(stockPage.partialInventoryOption)).isVisible();
+          step("Stock page main elements are displayed");
+        });
+  }
+
+  protected void navigateToMePage() {
+    mePage = new MePage(page);
+    step(
+        "Navigate to me page",
+        () -> {
+          page.locator(homePage.meFooterMenu).click();
+          step("Verify if Me page is displayed");
+          assertThat(page.locator(mePage.mePageTitle)).isVisible();
+          step("Me page is displayed");
+
+          //            assertThat(page.locator(mePage.daysOffRequestsCard)).isVisible();
+          assertThat(page.locator(mePage.planningVisualizationOption)).isVisible();
+          assertThat(page.locator(mePage.daysOffOption)).isVisible();
+          assertThat(page.locator(mePage.myContactsOption)).isVisible();
+          step("Me page elements are displayed");
+        });
   }
 }
