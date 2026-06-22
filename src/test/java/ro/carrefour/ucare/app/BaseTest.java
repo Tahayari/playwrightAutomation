@@ -170,7 +170,7 @@ public class BaseTest {
           step("Verify if search input is displayed");
           assertThat(page.locator(homePage.searchInputID)).isVisible();
 
-          step("Enter product id {id}");
+          step("Enter product id : " + id);
           page.locator(homePage.searchInputID).fill(id);
           page.locator(homePage.searchInputID).press("Enter");
 

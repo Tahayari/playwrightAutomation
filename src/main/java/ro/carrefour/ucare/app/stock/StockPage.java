@@ -5,6 +5,8 @@ import ro.carrefour.ucare.app.BasePage;
 
 public class StockPage extends BasePage {
 
+  private final Page page;
+
   public String stockPageTitle = "#stock-title";
   public String oosCard = "//div[@data-testid='stock-carousel']/div[1]";
   public String negativeStockCard = "#negative-stock-card";
@@ -18,5 +20,7 @@ public class StockPage extends BasePage {
   public String generalInventoryOption = "#inventory";
   public String partialInventoryOption = "#partial-inventory";
 
-  public StockPage(Page page) {}
+  public StockPage(Page page) {
+    this.page = page;
+  }
 }

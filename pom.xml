@@ -49,6 +49,8 @@
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                         -Dallure.results.directory=${allure.results.dir}
+                        -Dallure.link.issue.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Dallure.link.tms.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
                     </argLine>
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
