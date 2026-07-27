@@ -1,76 +1,96 @@
 package ro.carrefour.ucare.app;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static io.qameta.allure.Allure.step;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
+import io.qameta.allure.Step;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
+import ro.carrefour.ucare.app.me.MePage;
+import ro.carrefour.ucare.app.stock.StockPage;
+import ro.carrefour.ucare.utilities.AuthStateManager;
 import ro.carrefour.ucare.utilities.ConfigManager;
+import ro.carrefour.ucare.utilities.EvidenceManager;
 import ro.carrefour.ucare.utilities.PlaywrightFactory;
 
 public class BaseTest {
+
   protected BrowserContext context;
   protected Page page;
   protected ConfigManager configManager;
   protected HomePage homePage;
   protected Item360Page item360Page;
+  protected StockPage stockPage;
+  protected MePage mePage;
 
   private static final String AUTH_STATE_PATH = "./src/main/resources/storageSession.json";
   private static final double GLOBAL_TIMEOUT_MS = 20000;
 
+  // Shared across all instances and threads — manages the one session file on disk
+  private static final AuthStateManager authStateManager = new AuthStateManager(AUTH_STATE_PATH);
+
+  // Per-test-method — wraps the current page and context for failure capture
+  protected EvidenceManager evidenceManager;
+
+  // ==========================================
+  // LIFECYCLE
+  // ==========================================
+
   @BeforeSuite
   public void beforeSuite() {
-    PlaywrightFactory.initBrowser();
+    // Static assertion timeout — safe to set once from the main thread
     PlaywrightAssertions.setDefaultAssertionTimeout(GLOBAL_TIMEOUT_MS);
   }
 
   @BeforeTest
-  public void beforeTest() {}
+  public void beforeTest() {
+    // Runs in the worker thread — each thread must own its own Playwright + Browser
+    PlaywrightFactory.initBrowser();
+  }
 
   @BeforeMethod
   public void beforeMethod() {
-
     configManager = ConfigManager.getInstance();
-    boolean sessionExists = hasValidAuthState();
 
-    context =
-        PlaywrightFactory.createMobileContext(
-            sessionExists ? AUTH_STATE_PATH : null, GLOBAL_TIMEOUT_MS);
+    // Guarantees a valid session file exists before any test context loads it.
+    // First thread logs in via a temporary context; all others wait, then skip.
+    authStateManager.ensureAuthState(this::performLogin);
 
+    context = PlaywrightFactory.createMobileContext(AUTH_STATE_PATH, GLOBAL_TIMEOUT_MS);
     context
         .tracing()
         .start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true));
 
+    step("Navigate to Dashboard page");
     page = context.newPage();
     page.navigate(configManager.getProperty("app.url"));
 
-    if (!sessionExists) {
-      performLoginAndSaveState();
-    }
-
     homePage = new HomePage(page);
     item360Page = new Item360Page(page);
+    evidenceManager = new EvidenceManager(page, context);
   }
 
   @AfterMethod
   public void afterMethod(ITestResult result) {
-    String testId =
-        result.getTestClass().getRealClass().getSimpleName()
-            + "_"
-            + result.getMethod().getMethodName()
-            + "_"
-            + System.currentTimeMillis();
+    // Guard against @BeforeMethod failing before evidenceManager was initialized
+    if (evidenceManager != null) {
+      String testId =
+          result.getTestClass().getRealClass().getSimpleName()
+              + "_"
+              + result.getMethod().getMethodName()
+              + "_"
+              + System.currentTimeMillis();
 
-    if (result.getStatus() == ITestResult.FAILURE) {
-      captureScreenshot(testId);
-      saveTrace(testId); // also stops tracing with save
-    } else {
-      discardTrace(); // stops tracing, no file written
+      if (result.getStatus() == ITestResult.FAILURE) {
+        evidenceManager.captureEvidence(testId);
+      } else {
+        evidenceManager.discardTrace();
+      }
     }
 
     if (page != null) {
@@ -83,90 +103,44 @@ public class BaseTest {
     }
   }
 
+  @AfterTest
+  public void afterTest() {
+    // Mirrors @BeforeTest: each thread disposes its own browser
+    PlaywrightFactory.closeBrowser();
+  }
+
   @AfterSuite
   public void afterSuite() {
-    PlaywrightFactory.closeBrowser();
-    clearAuthStateFile();
+    // Wipe the session so the next run always starts with a fresh login
+    authStateManager.clearAuthStateFile();
   }
 
   // ==========================================
-  // PRIVATE HELPERS
+  // PRIVATE — login action passed to AuthStateManager
   // ==========================================
 
-  /**
-   * Returns true only when the auth-state file exists and contains a real session (i.e. is not
-   * missing, empty, or the blank-slate "{}" written by clearAuthStateFile).
-   */
-  private boolean hasValidAuthState() {
-    java.nio.file.Path path = Paths.get(AUTH_STATE_PATH);
-    if (!Files.exists(path)) return false;
+  private void performLogin() {
+    BrowserContext loginCtx = PlaywrightFactory.createMobileContext(null, GLOBAL_TIMEOUT_MS);
+    Page loginPage = loginCtx.newPage();
     try {
-      String content = new String(Files.readAllBytes(path)).trim();
-      return !content.isEmpty() && !content.equals("{}");
-    } catch (IOException e) {
-      System.err.println("Warning: Could not read auth state file: " + e.getMessage());
-      return false;
-    }
-  }
+      loginPage.navigate(configManager.getProperty("app.url"));
 
-  /**
-   * Executes the login sequence on the current live page, verifies the result, then serialises the
-   * browser session to disk for all subsequent tests. Throws RuntimeException on save failure —
-   * auth loss is a suite-breaking event.
-   */
-  private void performLoginAndSaveState() {
+      LoginPage lp = new LoginPage(loginPage);
+      HomePage hp =
+          lp.login(
+              configManager.getProperty("app.username"), configManager.getProperty("app.password"));
 
-    login();
+      assertThat(loginPage.locator(hp.homeFooterMenu)).isVisible();
+      assertThat(loginPage.locator(hp.stockFooterMenu)).isVisible();
 
-    try {
       Files.createDirectories(Paths.get(AUTH_STATE_PATH).getParent());
-      context.storageState(
+      loginCtx.storageState(
           new BrowserContext.StorageStateOptions().setPath(Paths.get(AUTH_STATE_PATH)));
     } catch (IOException e) {
       throw new RuntimeException("Critical: failed to save authentication session.", e);
-    }
-  }
-
-  /**
-   * Resets the auth-state file to a blank JSON object so that the next suite run always starts with
-   * a clean login, preventing stale/expired sessions.
-   */
-  private void clearAuthStateFile() {
-    try {
-      Files.write(Paths.get(AUTH_STATE_PATH), "{}".getBytes());
-    } catch (IOException e) {
-      System.err.println("Warning: failed to clear auth state file: " + e.getMessage());
-    }
-  }
-
-  private void captureScreenshot(String testId) {
-    if (page == null) return;
-    try {
-      Path dir = Paths.get("target/evidence/screenshots");
-      Files.createDirectories(dir);
-      page.screenshot(
-          new Page.ScreenshotOptions().setFullPage(true).setPath(dir.resolve(testId + ".png")));
-    } catch (Exception e) {
-      System.err.println("Warning: screenshot capture failed — " + e.getMessage());
-    }
-  }
-
-  private void saveTrace(String testId) {
-    if (context == null) return;
-    try {
-      Path dir = Paths.get("target/evidence/traces");
-      Files.createDirectories(dir);
-      context.tracing().stop(new Tracing.StopOptions().setPath(dir.resolve(testId + ".zip")));
-    } catch (Exception e) {
-      System.err.println("Warning: trace save failed — " + e.getMessage());
-    }
-  }
-
-  private void discardTrace() {
-    if (context == null) return;
-    try {
-      context.tracing().stop(); // no path = no file written
-    } catch (Exception ignored) {
+    } finally {
+      loginPage.close();
+      loginCtx.close();
     }
   }
 
@@ -174,32 +148,80 @@ public class BaseTest {
   // PROTECTED HELPERS (for subclasses)
   // ==========================================
 
-  private void login() {
-    LoginPage loginPage = new LoginPage(page);
-    HomePage homePage =
-        loginPage.login(
-            configManager.getProperty("app.username"), configManager.getProperty("app.password"));
-    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
-  }
-
+  @Step("Verify home page is fully loaded")
   protected void verifyHomePage() {
-    homePage = new HomePage(page);
-    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.meFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
-    assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+    step(
+        "Verify home page main elements are visible",
+        () -> {
+          assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.meFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
+          assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+          step("Main tabs are displayed");
+        });
   }
 
+  //  @Step("Search for product: {id}")
   protected void searchProduct(String id) {
-    assertThat(page.locator(homePage.searchInputID)).isVisible();
-    page.locator(homePage.searchInputID).fill(id);
-    page.locator(homePage.searchInputID).press("Enter");
+    step(
+        "Search for product with ID: " + id,
+        () -> {
+          step("Verify if search input is displayed");
+          assertThat(page.locator(homePage.searchInputID)).isVisible();
 
-    item360Page = new Item360Page(page);
-    assertThat(page.locator(item360Page.productImageID)).isVisible();
-    assertThat(page.locator(item360Page.productBrandID)).isVisible();
-    assertThat(page.locator(item360Page.productName)).isVisible();
+          step("Enter product id : " + id);
+          page.locator(homePage.searchInputID).fill(id);
+          page.locator(homePage.searchInputID).press("Enter");
+
+          step("Verify if item360 page is displayed");
+          assertThat(page.locator(item360Page.productImageID)).isVisible();
+          assertThat(page.locator(item360Page.productBrandID)).isVisible();
+          assertThat(page.locator(item360Page.productName)).isVisible();
+          step("Item360 page is displayed");
+        });
+  }
+
+  protected void navigateToStockPage() {
+    stockPage = new StockPage(page);
+    step(
+        "Navigate to Stock Page",
+        () -> {
+          page.locator(homePage.stockFooterMenu).click();
+          step("Verify if Stock page is displayed");
+          assertThat(page.locator(stockPage.stockPageTitle)).isVisible();
+          step("Stock page is displayed");
+
+          assertThat(page.locator(stockPage.oosCard)).isVisible();
+          assertThat(page.locator(stockPage.negativeStockCard)).isVisible();
+          assertThat(page.locator(stockPage.regularOrderOption)).isVisible();
+          assertThat(page.locator(stockPage.orderValidationOption)).isVisible();
+          assertThat(page.locator(stockPage.expiringProductsOption)).isVisible();
+          assertThat(page.locator(stockPage.outOfShelfOption)).isVisible();
+          assertThat(page.locator(stockPage.stockMovementsOption)).isVisible();
+          assertThat(page.locator(stockPage.stockTransferOption)).isVisible();
+          assertThat(page.locator(stockPage.palletsOption)).isVisible();
+          assertThat(page.locator(stockPage.generalInventoryOption)).isVisible();
+          assertThat(page.locator(stockPage.partialInventoryOption)).isVisible();
+          step("Stock page main elements are displayed");
+        });
+  }
+
+  protected void navigateToMePage() {
+    mePage = new MePage(page);
+    step(
+        "Navigate to me page",
+        () -> {
+          page.locator(homePage.meFooterMenu).click();
+          step("Verify if Me page is displayed");
+          assertThat(page.locator(mePage.mePageTitle)).isVisible();
+          step("Me page is displayed");
+
+          //            assertThat(page.locator(mePage.daysOffRequestsCard)).isVisible();
+          assertThat(page.locator(mePage.planningVisualizationOption)).isVisible();
+          assertThat(page.locator(mePage.daysOffOption)).isVisible();
+          assertThat(page.locator(mePage.myContactsOption)).isVisible();
+          step("Me page elements are displayed");
+        });
   }
 }

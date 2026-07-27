@@ -12,6 +12,15 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spotless.version>3.6.0</spotless.version>
+        <playwright.version>1.58.0</playwright.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <testng.version>7.11.0</testng.version>
+        <allure.version>2.27.0</allure.version>
+        <allure-maven.version>2.13.0</allure-maven.version>
+        <aspectj.version>1.9.21</aspectj.version>
+        <allure.results.dir>${project.build.directory}/allure-results</allure.results.dir>
+        <device>Desktop</device>
     </properties>
 
     <build>
@@ -20,12 +29,87 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>${spotless.version}</version>
                 <configuration>
                     <java>
                         <googleJavaFormat/>
                     </java>
                 </configuration>
+            </plugin>
+
+            <!--
+    Surefire must launch the JVM with the AspectJ agent so @Step
+    annotations are intercepted at runtime.
+    -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                        -Dallure.results.directory=${allure.results.dir}
+                        -Dallure.link.issue.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Dallure.link.tms.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                    </argLine>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+
+            <!-- Generates the static HTML report from target/allure-results -->
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>${allure-maven.version}</version>
+                <configuration>
+                    <!--
+                        reportVersion must match allure-testng so the CLI that generates
+                        the HTML understands the JSON format the listener wrote.
+                        Without this, allure-maven downloads CLI 2.20.1 but the results
+                        were written by 2.27.0 — a format mismatch.
+                    -->
+                    <reportVersion>${allure.version}</reportVersion>
+                    <!--
+                        Explicitly point the plugin to the same directory Surefire
+                        told allure-testng to write into.
+                    -->
+                    <resultsDirectory>${allure.results.dir}</resultsDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-allure-environment</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
@@ -37,15 +121,33 @@
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
-            <version>1.58.0</version>
+            <version>${playwright.version}</version>
         </dependency>
 
         <!-- Source: https://mvnrepository.com/artifact/org.testng/testng -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>7.11.0</version>
+            <version>${testng.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+            <version>${allure.version}</version>
+        </dependency>
+
+        <!--
+            AspectJ weaver — required for @Step annotations to appear
+            as timeline entries in the report. Without it, tests still
+            pass/fail correctly but no step breakdown is shown.
+        -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>
