@@ -11,5 +11,5 @@ public class MePage extends BasePage {
   public String daysOffOption = "#days-off";
   public String myContactsOption = "#contacts";
 
-  public MePage(Page page) {}
+  public MePage(Page page) {super(page);}
 }

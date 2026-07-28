@@ -4,56 +4,32 @@
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
         <listener class-name="ro.carrefour.ucare.utilities.RetryListener"/>
-        <listener class-name="ro.carrefour.ucare.utilities.ScreenshotListener"/>
     </listeners>
 
 
-
-<!--    <test name="Homepage_Tests">-->
-<!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.app.HomePageTests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-        <test name="Item360_Tests_part1">
-            <classes>
-                <class name="ro.carrefour.ucare.app.item360.Item360Tests">
-                <methods>
-                    <include name="navigateTo_item360Page"/>
-                    <include name="navigateTo_item360Page_2"/>
-                    <include name="navigateTo_item360Page_3"/>
-                    <include name="navigateTo_item360Page_4"/>
-                    <include name="navigateTo_item360Page_5"/>
-                </methods>
-                </class>
-            </classes>
-        </test>
-
-    <test name="Item360_Tests_part2">
+    <test name="Homepage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.item360.Item360Tests">
-                <methods>
-                    <include name="navigateTo_item360Page_5"/>
-                    <include name="navigateTo_item360Page_6"/>
-                    <include name="navigateTo_item360Page_7"/>
-                    <include name="navigateTo_item360Page_8"/>
-                    <include name="navigateTo_item360Page_9"/>
-                </methods>
-            </class>
+            <class name="ro.carrefour.ucare.app.HomePageTests"/>
         </classes>
     </test>
 
-<!--    <test name="StockPage_Tests">-->
-<!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.app.stock.StockPageTests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Item360_Tests">
+        <classes>
+            <class name="ro.carrefour.ucare.app.item360.Item360Tests"/>
+        </classes>
+    </test>
 
-<!--    <test name="MePage_Tests">-->
-<!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.app.me.MePageTests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="StockPage_Tests">
+        <classes>
+            <class name="ro.carrefour.ucare.app.stock.StockPageTests"/>
+        </classes>
+    </test>
+
+    <test name="MePage_Tests">
+        <classes>
+            <class name="ro.carrefour.ucare.app.me.MePageTests"/>
+        </classes>
+    </test>
 
 
 </suite>
