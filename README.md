@@ -323,7 +323,7 @@ Main test suite with test grouping and listeners:
     </listeners>
     <test name="Homepage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.HomePageTests"/>
+            <class name="ro.carrefour.ucare.e2e.HomePageTests"/>
         </classes>
     </test>
 </suite>

@@ -1,8 +1,8 @@
-package ro.carrefour.ucare.app.stock;
+package ro.carrefour.ucare.e2e.stock;
 
 import io.qameta.allure.Description;
 import org.testng.annotations.Test;
-import ro.carrefour.ucare.app.BaseTest;
+import ro.carrefour.ucare.e2e.BaseTest;
 
 public class StockPageTests extends BaseTest {
 

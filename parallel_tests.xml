@@ -4,8 +4,8 @@
 <suite thread-count="2" parallel="classes" name="Full_UAT_Suite" verbose="1">
     <test name="All">
         <classes>
-            <class name="ro.carrefour.ucare.app.HomePageTests"/>
-            <class name="ro.carrefour.ucare.app.item360.Item360Tests"/>
+            <class name="ro.carrefour.ucare.e2e.HomePageTests"/>
+            <class name="ro.carrefour.ucare.e2e.item360.Item360Tests"/>
         </classes>
     </test>
 </suite>

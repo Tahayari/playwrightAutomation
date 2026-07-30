@@ -1,9 +1,9 @@
-package ro.carrefour.ucare.app.item360;
+package ro.carrefour.ucare.e2e.item360;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import org.testng.annotations.Test;
-import ro.carrefour.ucare.app.BaseTest;
+import ro.carrefour.ucare.e2e.BaseTest;
 
 @Feature("Item360")
 public class Item360Tests extends BaseTest {

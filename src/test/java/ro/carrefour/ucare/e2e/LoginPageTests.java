@@ -1,8 +1,9 @@
-package ro.carrefour.ucare.app;
+package ro.carrefour.ucare.e2e;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import org.testng.annotations.Test;
+import ro.carrefour.ucare.LoginPage;
 
 @Feature("Login")
 public class LoginPageTests extends BaseTest {

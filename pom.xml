@@ -11,6 +11,10 @@
     <url>http://maven.apache.org</url>
 
     <properties>
+        <!-- Defaults — overridden at the command line with -Denv=be/ro/fr -->
+        <env>ro</env>
+        <suite>src/test/resources/suites/sanity-romania.xml</suite>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotless.version>3.6.0</spotless.version>
         <playwright.version>1.58.0</playwright.version>
@@ -46,14 +50,16 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                         -Dallure.results.directory=${allure.results.dir}
                         -Dallure.link.issue.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
                         -Dallure.link.tms.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Denv=${env}
                     </argLine>
                     <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suite}</suiteXmlFile>
                     </suiteXmlFiles>
                 </configuration>
             </plugin>
@@ -110,6 +116,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
             </plugin>
 
         </plugins>

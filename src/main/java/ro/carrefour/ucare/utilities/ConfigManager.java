@@ -9,43 +9,58 @@ import java.util.Properties;
  * environment.properties file
  */
 public class ConfigManager {
-  private static ConfigManager instance;
-  private Properties properties;
 
-  private ConfigManager() {
-    loadProperties();
-  }
+    private static ConfigManager instance;
+    private final Properties properties;
 
-  /** Get singleton instance of ConfigManager */
-  public static ConfigManager getInstance() {
-    if (instance == null) {
-      instance = new ConfigManager();
+    private ConfigManager() {
+        // -Denv=ro  or  -Denv=be  — defaults to ro if not supplied
+        String env = System.getProperty("env", "ro");
+        String configFile = "config/" + env + ".properties";
+
+        try (InputStream input = getClass()
+                .getClassLoader()
+                .getResourceAsStream(configFile)) {
+
+            if (input == null) {
+                throw new RuntimeException(
+                        "Config file not found on classpath: " + configFile
+                                + " — did you pass -Denv correctly?"
+                );
+            }
+            properties = new Properties();
+            properties.load(input);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load config file: " + configFile, e);
+        }
     }
-    return instance;
-  }
 
-  /** Loads properties from environment.properties file */
-  private void loadProperties() {
-    properties = new Properties();
-    try (InputStream input =
-        ConfigManager.class.getClassLoader().getResourceAsStream("environment.properties")) {
-      if (input == null) {
-        throw new RuntimeException("environment.properties file not found in resources folder");
-      }
-      properties.load(input);
-
-      // Validate required properties
-      if (getProperty("app.url") == null
-          || getProperty("app.username") == null
-          || getProperty("app.password") == null) {
-        throw new RuntimeException("Missing required properties in environment.properties");
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to load environment.properties", e);
+    public static synchronized ConfigManager getInstance() {
+        if (instance == null) {
+            instance = new ConfigManager();
+        }
+        return instance;
     }
-  }
 
-  public String getProperty(String key) {
-    return properties.getProperty(key);
-  }
+    /**
+     * System property always wins over the file value.
+     * This lets CI/CD inject credentials without modifying any file:
+     * mvn test -Denv=ro -Dapp.username=$SECRET_USER -Dapp.password=$SECRET_PASS
+     */
+    public String getProperty(String key) {
+        String value = System.getProperty(key, properties.getProperty(key));
+        if (value == null || value.isBlank()) {
+            throw new RuntimeException(
+                    "Required property '" + key + "' not found in system properties "
+                            + "or config/[env].properties"
+            );
+        }
+        return value;
+    }
+
+    public String getProperty(String key, String defaultValue) {
+        return System.getProperty(key, properties.getProperty(key, defaultValue));
+    }
 }
+

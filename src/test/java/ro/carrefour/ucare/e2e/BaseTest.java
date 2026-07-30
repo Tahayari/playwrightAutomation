@@ -1,4 +1,4 @@
-package ro.carrefour.ucare.app;
+package ro.carrefour.ucare.e2e;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.qameta.allure.Allure.step;
@@ -13,8 +13,11 @@ import java.nio.file.Paths;
 
 import org.testng.ITestResult;
 import org.testng.annotations.*;
-import ro.carrefour.ucare.app.me.MePage;
-import ro.carrefour.ucare.app.stock.StockPage;
+import ro.carrefour.ucare.HomePage;
+import ro.carrefour.ucare.Item360Page;
+import ro.carrefour.ucare.LoginPage;
+import ro.carrefour.ucare.me.MePage;
+import ro.carrefour.ucare.stock.StockPage;
 import ro.carrefour.ucare.utilities.AuthStateManager;
 import ro.carrefour.ucare.utilities.ConfigManager;
 import ro.carrefour.ucare.utilities.EvidenceManager;
@@ -130,8 +133,7 @@ public class BaseTest {
                     lp.login(
                             configManager.getProperty("app.username"), configManager.getProperty("app.password"));
 
-            assertThat(loginPage.locator(hp.homeFooterMenu)).isVisible();
-            assertThat(loginPage.locator(hp.stockFooterMenu)).isVisible();
+            hp.assertHomePageIsDisplayed();
 
             Files.createDirectories(Paths.get(AUTH_STATE_PATH).getParent());
             loginCtx.storageState(
@@ -153,11 +155,7 @@ public class BaseTest {
         step(
                 "Verify home page main elements are visible",
                 () -> {
-                    assertThat(page.locator(homePage.homeFooterMenu)).isVisible();
-                    assertThat(page.locator(homePage.stockFooterMenu)).isVisible();
-                    assertThat(page.locator(homePage.meFooterMenu)).isVisible();
-                    assertThat(page.locator(homePage.priceFooterMenu)).isVisible();
-                    assertThat(page.locator(homePage.notificationsFooterMenu)).isVisible();
+                    homePage.assertAllTabsAreDisplayed_RO();
                     step("Main tabs are displayed");
                 });
     }
@@ -168,16 +166,14 @@ public class BaseTest {
                 "Search for product with ID: " + id,
                 () -> {
                     step("Verify if search input is displayed");
-                    assertThat(page.locator(homePage.searchInputID)).isVisible();
+                    homePage.assertSearchInputIsDisplayed();
 
                     step("Enter product id : " + id);
-                    page.locator(homePage.searchInputID).fill(id);
-                    page.locator(homePage.searchInputID).press("Enter");
+                    homePage.insertTextToSearchInput(id);
 
                     step("Verify if item360 page is displayed");
-                    assertThat(page.locator(item360Page.productImageID)).isVisible();
-                    assertThat(page.locator(item360Page.productBrandID)).isVisible();
-                    assertThat(page.locator(item360Page.productName)).isVisible();
+                    item360Page.assertItem360PageIsDisplayed();
+
                     step("Item360 page is displayed");
                 });
     }
@@ -187,23 +183,13 @@ public class BaseTest {
         step(
                 "Navigate to Stock Page",
                 () -> {
-                    page.locator(homePage.stockFooterMenu).click();
-                    step("Verify if Stock page is displayed");
-                    assertThat(page.locator(stockPage.stockPageTitle)).isVisible();
-                    step("Stock page is displayed");
+                    homePage.navigateToStockPage();
 
-                    assertThat(page.locator(stockPage.oosCard)).isVisible();
-//                    assertThat(page.locator(stockPage.negativeStockCard)).isVisible();
-                    assertThat(page.locator(stockPage.regularOrderOption)).isVisible();
-                    assertThat(page.locator(stockPage.orderValidationOption)).isVisible();
-                    assertThat(page.locator(stockPage.expiringProductsOption)).isVisible();
-                    assertThat(page.locator(stockPage.outOfShelfOption)).isVisible();
-                    assertThat(page.locator(stockPage.stockMovementsOption)).isVisible();
-                    assertThat(page.locator(stockPage.stockTransferOption)).isVisible();
-                    assertThat(page.locator(stockPage.palletsOption)).isVisible();
-                    assertThat(page.locator(stockPage.generalInventoryOption)).isVisible();
-                    assertThat(page.locator(stockPage.partialInventoryOption)).isVisible();
-                    step("Stock page main elements are displayed");
+                    step("Verify if Stock page is displayed");
+                    stockPage.assertPageTitleIsDisplayed();
+
+                    step("Verify if Stock page main elements are displayed");
+                    stockPage.assertStockPageMainElementsAreDisplayed_RO();
                 });
     }
 
@@ -212,16 +198,13 @@ public class BaseTest {
         step(
                 "Navigate to me page",
                 () -> {
-                    page.locator(homePage.meFooterMenu).click();
-                    step("Verify if Me page is displayed");
-                    assertThat(page.locator(mePage.mePageTitle)).isVisible();
-                    step("Me page is displayed");
+                    homePage.navigateToMePage();
 
-                    //            assertThat(page.locator(mePage.daysOffRequestsCard)).isVisible();
-                    assertThat(page.locator(mePage.planningVisualizationOption)).isVisible();
-                    assertThat(page.locator(mePage.daysOffOption)).isVisible();
-                    assertThat(page.locator(mePage.myContactsOption)).isVisible();
-                    step("Me page elements are displayed");
+                    step("Verify if Me page is displayed");
+                    mePage.assertPageTitleIsDisplayed();
+
+                    step("Verify if Me page elements are displayed");
+                    mePage.assertMePageMainElementsAreDisplayed_RO();
                 });
     }
 }

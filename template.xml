@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
-<suite name="Full_UAT_Suite" verbose="1" parallel="tests" thread-count="2">
+<suite name="Smoke_TestSuite" verbose="1" parallel="tests" thread-count="2">
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
         <listener class-name="ro.carrefour.ucare.utilities.RetryListener"/>
@@ -9,27 +9,26 @@
 
     <test name="Homepage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.HomePageTests"/>
+            <class name="ro.carrefour.ucare.e2e.HomePageTests"/>
         </classes>
     </test>
 
     <test name="Item360_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.item360.Item360Tests"/>
+            <class name="ro.carrefour.ucare.e2e.item360.Item360Tests"/>
         </classes>
     </test>
 
     <test name="StockPage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.stock.StockPageTests"/>
+            <class name="ro.carrefour.ucare.e2e.stock.StockPageTests"/>
         </classes>
     </test>
 
     <test name="MePage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.app.me.MePageTests"/>
+            <class name="ro.carrefour.ucare.e2e.me.MePageTests"/>
         </classes>
     </test>
-
 
 </suite>

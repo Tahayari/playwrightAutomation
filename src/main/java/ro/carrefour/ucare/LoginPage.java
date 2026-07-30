@@ -1,4 +1,4 @@
-package ro.carrefour.ucare.app;
+package ro.carrefour.ucare;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
