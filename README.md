@@ -39,7 +39,7 @@ No separate WebDriver or browser drivers required — Playwright manages its own
 playwrightAutomation/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/carrefour/ucare/
+│   │   ├── java/ro/carrefour/ucare/
 │   │   │   ├── BasePage.java              # Base page: shared locators, methods & assertions
 │   │   │   ├── HomePage.java              # Home page locators, methods & assertions
 │   │   │   ├── LoginPage.java             # Login page locators, methods & assertions
