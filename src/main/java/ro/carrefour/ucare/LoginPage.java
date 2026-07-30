@@ -26,11 +26,9 @@ public class LoginPage {
         return new HomePage(page);
     }
 
-
     // ── Assertions ────────────────────────────────────────────────────────
     public void assertPageIsReady() {
         page.waitForURL("**ppd.np.idp.carrefour.com**");
         assertThat(page.locator(SIGN_IN_BUTTON)).isVisible();
     }
-
 }

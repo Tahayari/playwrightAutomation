@@ -1,8 +1,8 @@
 package ro.carrefour.ucare;
 
-import com.microsoft.playwright.Page;
-
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+import com.microsoft.playwright.Page;
 
 public class HomePage extends BasePage {
 
@@ -15,7 +15,7 @@ public class HomePage extends BasePage {
         super(page);
     }
 
-    public void openSideMenu(){
+    public void openSideMenu() {
         page.getByAltText(BURGER_MENU_ICON).click();
 
         assertThat(page.locator(CHANGE_LANGUAGE_ID)).isVisible();
@@ -23,9 +23,8 @@ public class HomePage extends BasePage {
         assertThat(page.locator(LOGOUT_ID)).isVisible();
     }
 
-    public void logoutFromSideMenu(){
+    public void logoutFromSideMenu() {
         page.locator(LOGOUT_ID).click();
         page.waitForURL("**ppd.np.idp.carrefour.com**");
     }
-
 }

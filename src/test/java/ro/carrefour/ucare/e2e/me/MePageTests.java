@@ -6,10 +6,10 @@ import ro.carrefour.ucare.e2e.BaseTest;
 
 public class MePageTests extends BaseTest {
 
-  @Description("Verify that the Me page loads correctly and displays expected elements")
-  @Test
-  public void navigateToMePage_success_test() {
-    verifyHomePage();
-    navigateToMePage();
-  }
+    @Description("Verify that the Me page loads correctly and displays expected elements")
+    @Test
+    public void navigateToMePage_success_test() {
+        verifyHomePage();
+        navigateToMePage();
+    }
 }

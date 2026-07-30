@@ -1,16 +1,13 @@
 package ro.carrefour.ucare.e2e;
 
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.qameta.allure.Allure.step;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import io.qameta.allure.Step;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import ro.carrefour.ucare.HomePage;
@@ -67,9 +64,12 @@ public class BaseTest {
         authStateManager.ensureAuthState(this::performLogin);
 
         context = PlaywrightFactory.createMobileContext(AUTH_STATE_PATH, GLOBAL_TIMEOUT_MS);
-        context
-                .tracing()
-                .start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true));
+        context.tracing()
+                .start(
+                        new Tracing.StartOptions()
+                                .setScreenshots(true)
+                                .setSnapshots(true)
+                                .setSources(true));
 
         step("Navigate to Dashboard page");
         page = context.newPage();
@@ -131,7 +131,8 @@ public class BaseTest {
             LoginPage lp = new LoginPage(loginPage);
             HomePage hp =
                     lp.login(
-                            configManager.getProperty("app.username"), configManager.getProperty("app.password"));
+                            configManager.getProperty("app.username"),
+                            configManager.getProperty("app.password"));
 
             hp.assertHomePageIsDisplayed();
 

@@ -36,9 +36,25 @@
                 <version>${spotless.version}</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat/>
+                        <!-- Removes unused imports automatically -->
+                        <removeUnusedImports />
+
+                        <!-- Enforces official Google Java formatting standards -->
+                        <googleJavaFormat>
+                            <version>1.22.0</version>
+                            <style>AOSP</style> <!-- Optional: AOSP style uses 4 spaces instead of 2 for indentation -->
+                        </googleJavaFormat>
                     </java>
                 </configuration>
+                <executions>
+                    <execution>
+                        <!-- Automatically formats your code during 'mvn compile' or 'mvn test' -->
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!--

@@ -18,15 +18,13 @@ public class ConfigManager {
         String env = System.getProperty("env", "ro");
         String configFile = "config/" + env + ".properties";
 
-        try (InputStream input = getClass()
-                .getClassLoader()
-                .getResourceAsStream(configFile)) {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream(configFile)) {
 
             if (input == null) {
                 throw new RuntimeException(
-                        "Config file not found on classpath: " + configFile
-                                + " — did you pass -Denv correctly?"
-                );
+                        "Config file not found on classpath: "
+                                + configFile
+                                + " — did you pass -Denv correctly?");
             }
             properties = new Properties();
             properties.load(input);
@@ -44,17 +42,17 @@ public class ConfigManager {
     }
 
     /**
-     * System property always wins over the file value.
-     * This lets CI/CD inject credentials without modifying any file:
-     * mvn test -Denv=ro -Dapp.username=$SECRET_USER -Dapp.password=$SECRET_PASS
+     * System property always wins over the file value. This lets CI/CD inject credentials without
+     * modifying any file: mvn test -Denv=ro -Dapp.username=$SECRET_USER -Dapp.password=$SECRET_PASS
      */
     public String getProperty(String key) {
         String value = System.getProperty(key, properties.getProperty(key));
         if (value == null || value.isBlank()) {
             throw new RuntimeException(
-                    "Required property '" + key + "' not found in system properties "
-                            + "or config/[env].properties"
-            );
+                    "Required property '"
+                            + key
+                            + "' not found in system properties "
+                            + "or config/[env].properties");
         }
         return value;
     }
@@ -63,4 +61,3 @@ public class ConfigManager {
         return System.getProperty(key, properties.getProperty(key, defaultValue));
     }
 }
-

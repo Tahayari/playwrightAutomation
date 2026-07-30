@@ -1,9 +1,9 @@
 package ro.carrefour.ucare.stock;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
 import com.microsoft.playwright.Page;
 import ro.carrefour.ucare.BasePage;
-
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 public class StockPage extends BasePage {
 
@@ -26,16 +26,15 @@ public class StockPage extends BasePage {
 
     // ── Methods ───────────────────────────────────────────────────────────
 
-
     // ── Assertions Shared ─────────────────────────────────────────────────
-    public void assertPageTitleIsDisplayed(){
+    public void assertPageTitleIsDisplayed() {
         assertThat(page.locator(STOCK_PAGE_TITLE)).isVisible();
     }
 
     // ── Assertions ROMANIA-ONLY ───────────────────────────────────────────
     public void assertStockPageMainElementsAreDisplayed_RO() {
         assertThat(page.locator(OOS_CARD)).isVisible();
-//        assertThat(page.locator(negativeStockCard)).isVisible();
+        //        assertThat(page.locator(negativeStockCard)).isVisible();
         assertThat(page.locator(REGULAR_ORDER_OPTION)).isVisible();
         assertThat(page.locator(ORDER_VALIDATION_OPTION)).isVisible();
         assertThat(page.locator(EXPIRING_PRODUCTS_OPTION)).isVisible();

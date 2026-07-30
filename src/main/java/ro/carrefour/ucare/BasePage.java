@@ -1,8 +1,8 @@
 package ro.carrefour.ucare;
 
-import com.microsoft.playwright.Page;
-
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+import com.microsoft.playwright.Page;
 
 public class BasePage {
 
@@ -33,7 +33,7 @@ public class BasePage {
         page.locator(STOCK_FOOTER_MENU).click();
     }
 
-    public  void navigateToMePage() {
+    public void navigateToMePage() {
         page.locator(ME_FOOTER_MENU).click();
     }
 
@@ -56,5 +56,4 @@ public class BasePage {
         assertThat(page.locator(NOTIFICATIONS_FOOTER_MENU)).isVisible();
         assertThat(page.locator(PRODUCT_SEARCH_INPUT)).isVisible();
     }
-
 }

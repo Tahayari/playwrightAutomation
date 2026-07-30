@@ -16,6 +16,4 @@ public class Item360Tests extends BaseTest {
 
         searchProduct("10005000");
     }
-
-
 }

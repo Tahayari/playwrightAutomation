@@ -1,8 +1,8 @@
 package ro.carrefour.ucare;
 
-import com.microsoft.playwright.Page;
-
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+import com.microsoft.playwright.Page;
 
 public class Item360Page extends BasePage {
 
@@ -14,12 +14,9 @@ public class Item360Page extends BasePage {
         super(page);
     }
 
-
     // ── Methods ───────────────────────────────────────────────────────────
 
-
     // ── Assertions Shared ─────────────────────────────────────────────────
-
 
     // ── Assertions ROMANIA-ONLY ───────────────────────────────────────────
 
@@ -28,5 +25,4 @@ public class Item360Page extends BasePage {
         assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
         assertThat(page.locator(PRODUCT_NAME_ID)).isVisible();
     }
-
 }

@@ -1,9 +1,9 @@
 package ro.carrefour.ucare.me;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
 import com.microsoft.playwright.Page;
 import ro.carrefour.ucare.BasePage;
-
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 public class MePage extends BasePage {
 
@@ -19,7 +19,6 @@ public class MePage extends BasePage {
 
     // ── Methods ───────────────────────────────────────────────────────────
 
-
     // ── Assertions Shared ─────────────────────────────────────────────────
     public void assertPageTitleIsDisplayed() {
         assertThat(page.locator(ME_PAGE_TITLE)).isVisible();
@@ -32,5 +31,4 @@ public class MePage extends BasePage {
         assertThat(page.locator(DAYS_OFF_OPTION)).isVisible();
         assertThat(page.locator(MY_CONTACTS_OPTION)).isVisible();
     }
-
 }
