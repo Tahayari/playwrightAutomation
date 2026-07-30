@@ -39,7 +39,7 @@ No separate WebDriver or browser drivers required — Playwright manages its own
 playwrightAutomation/
 ├── src/
 │   ├── main/
-│   │   ├── java/ro/carrefour/ucare/
+│   │   ├── java/com/carrefour/ucare/
 │   │   │   ├── BasePage.java              # Base page: shared locators, methods & assertions
 │   │   │   ├── HomePage.java              # Home page locators, methods & assertions
 │   │   │   ├── LoginPage.java             # Login page locators, methods & assertions
@@ -62,17 +62,22 @@ playwrightAutomation/
 │   │       │   └── be.properties          # Belgium environment config
 │   │       └── storageSession.json        # Saved browser session (auto-generated at runtime)
 │   └── test/
-│       ├── java/ro/carrefour/ucare/e2e/
+│       ├── java/com/carrefour/ucare/e2e/
+│       │   ├── romania                          # Romania-specific test classes
+│       │   │   └──item360/
+│       │   │         └── Item360Tests.java      # Item360 test cases
+│       │   │   └──stock/
+│       │   │         └──  StockPageTests.java   # Stock page test cases
+│       │   │   └── me/
+│       │   │         └──MePageTests.java        # Me page test cases
+│       │   ├── france                     # France-specific test classes  
+│       │   ├── belgium                    # Belgium-specific test classes
 │       │   ├── BaseTest.java              # Test lifecycle (@Before/@After hooks, login)
 │       │   ├── HomePageTests.java         # Home page test cases
 │       │   ├── LoginPageTests.java        # Login page test cases
-│       │   ├── item360/
-│       │   │   └── Item360Tests.java      # Item360 test cases
-│       │   ├── stock/
-│       │   │   └── StockPageTests.java    # Stock page test cases
-│       │   └── me/
-│       │       └── MePageTests.java       # Me page test cases
+
 │       └── resources/
+│           │   └──categories.json         # Categories used in Allure report
 │           └── suites/
 │               ├── sanity-romania.xml     # TestNG suite for Romania
 │               └── sanity-france.xml      # TestNG suite for France
