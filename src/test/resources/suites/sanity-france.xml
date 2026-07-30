@@ -3,31 +3,31 @@
 <suite name="France_Smoke_TestSuite" verbose="1" parallel="tests" thread-count="2">
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
-        <listener class-name="ro.carrefour.ucare.utilities.RetryListener"/>
+        <listener class-name="com.carrefour.ucare.utilities.RetryListener"/>
     </listeners>
 
 
-<!--    <test name="Homepage_Tests">-->
-<!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.e2e.HomePageTests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-<!--    <test name="Item360_Tests">-->
-<!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.e2e.item360.Item360Tests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-    <test name="StockPage_Tests">
+    <test name="Homepage_Tests">
         <classes>
-            <class name="ro.carrefour.ucare.e2e.stock.StockPageTests"/>
+            <class name="com.carrefour.ucare.e2e.HomePageTests"/>
         </classes>
     </test>
 
+<!--    <test name="Item360_Tests">-->
+<!--        <classes>-->
+<!--            <class name="item360.e2e.com.carrefour.ucare.Item360Tests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="StockPage_Tests">-->
+<!--        <classes>-->
+<!--            <class name="stock.e2e.com.carrefour.ucare.StockPageTests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
 <!--    <test name="MePage_Tests">-->
 <!--        <classes>-->
-<!--            <class name="ro.carrefour.ucare.e2e.me.MePageTests"/>-->
+<!--            <class name="me.e2e.com.carrefour.ucare.MePageTests"/>-->
 <!--        </classes>-->
 <!--    </test>-->
 
