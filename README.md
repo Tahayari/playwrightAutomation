@@ -43,7 +43,7 @@ playwrightAutomation/
 │   │   │   ├── BasePage.java              # Base page: shared locators, methods & assertions
 │   │   │   ├── HomePage.java              # Home page locators, methods & assertions
 │   │   │   ├── LoginPage.java             # Login page locators, methods & assertions
-│   │   │   ├── Item360Page.java           # Item360 page locators, methods & assertions
+│   │   │   ├── Item360Page.java           # Item360 page locators, methods & assertions (_RO / _FR)
 │   │   │   ├── me/
 │   │   │   │   └── MePage.java            # Me page locators, methods & assertions
 │   │   │   ├── stock/
@@ -53,6 +53,7 @@ playwrightAutomation/
 │   │   │       ├── AuthStateManager.java  # Manages the session file (login-once logic)
 │   │   │       ├── PlaywrightFactory.java # Creates BrowserContext with device profiles
 │   │   │       ├── EvidenceManager.java   # Captures screenshots & traces on failure
+│   │   │       ├── TestDataManager.java   # Loads testdata/[env].json; dot-notation key lookup
 │   │   │       ├── RetryAnalyzer.java     # Retry logic for flaky tests
 │   │   │       └── RetryListener.java     # TestNG listener that wires in RetryAnalyzer
 │   │   └── resources/
@@ -60,27 +61,31 @@ playwrightAutomation/
 │   │       │   ├── ro.properties          # Romania environment config (URL, credentials)
 │   │       │   ├── fr.properties          # France environment config
 │   │       │   └── be.properties          # Belgium environment config
+│   │       ├── environment.properties     # Allure environment metadata (country, URL, device)
 │   │       └── storageSession.json        # Saved browser session (auto-generated at runtime)
 │   └── test/
 │       ├── java/com/carrefour/ucare/e2e/
-│       │   ├── romania                          # Romania-specific test classes
-│       │   │   └──item360/
-│       │   │         └── Item360Tests.java      # Item360 test cases
-│       │   │   └──stock/
-│       │   │         └──  StockPageTests.java   # Stock page test cases
+│       │   ├── romania/
+│       │   │   ├── item360/
+│       │   │   │   └── Item360Tests.java      # Item360 test cases (Romania)
+│       │   │   ├── stock/
+│       │   │   │   └── StockPageTests.java    # Stock page test cases
 │       │   │   └── me/
-│       │   │         └──MePageTests.java        # Me page test cases
-│       │   ├── france                     # France-specific test classes  
-│       │   ├── belgium                    # Belgium-specific test classes
+│       │   │       └── MePageTests.java       # Me page test cases
+│       │   ├── france/
+│       │   │   └── item360/
+│       │   │       └── Item360Tests.java      # Item360 test cases (France)
 │       │   ├── BaseTest.java              # Test lifecycle (@Before/@After hooks, login)
 │       │   ├── HomePageTests.java         # Home page test cases
-│       │   ├── LoginPageTests.java        # Login page test cases
-
+│       │   └── LoginPageTests.java        # Login page test cases
 │       └── resources/
-│           │   └──categories.json         # Categories used in Allure report
+│           ├── categories.json            # Categories used in Allure report
+│           ├── testdata/
+│           │   ├── ro.json                # Test data for Romania (product codes, EANs, etc.)
+│           │   └── fr.json                # Test data for France
 │           └── suites/
-│               ├── sanity-romania.xml     # TestNG suite for Romania
-│               └── sanity-france.xml      # TestNG suite for France
+│               ├── sanity-romania.xml     # TestNG suite for Romania (parallel, thread-count=2)
+│               └── sanity-france.xml      # TestNG suite for France (parallel, thread-count=2)
 └── pom.xml
 ```
 
@@ -107,9 +112,15 @@ Each page of the app has its own class (e.g. `StockPage.java`, `HomePage.java`).
 
 - **Assertions** — verify expected page state (grouped under `// ── Assertions ──` comments). Country-specific assertions are suffixed with `_RO`, `_FR`, etc.:
   ```java
-  public void assertStockPageMainElementsAreDisplayed_RO() {
-      assertThat(page.locator(OOS_CARD)).isVisible();
-      assertThat(page.locator(REGULAR_ORDER_OPTION)).isVisible();
+  public void assertItem360PageElements_RO() {
+      assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
+      assertThat(page.locator(GO_TO_PRICE_AUDIT_ID)).isVisible();
+      // ...
+  }
+
+  public void assertItem360PageElements_FR() {
+      assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
+      assertThat(page.locator(RECOMMENDED_PRICE_ID)).isVisible();
       // ...
   }
   ```
@@ -118,27 +129,62 @@ Each page of the app has its own class (e.g. `StockPage.java`, `HomePage.java`).
 
 ### Test Classes (`src/test/java/.../e2e/`)
 
-Test classes contain the actual `@Test` methods. Each test class extends `BaseTest` and focuses on a single page/feature area.
+Test classes are organised by **country package** (`romania/`, `france/`) and then by **feature area** (`item360/`, `stock/`, `me/`). Each test class extends `BaseTest` and focuses on a single page/feature area.
 
 - Write tests here — **not** in page objects
 - Each `@Test` method should represent one independent scenario
-- Use page object methods to interact with the app; use Allure `step()` to document what each step does:
+- Use page object methods to interact with the app; use Allure `@Step` / `step()` to document what each step does
+- Use `TestDataManager.get("key.path")` to supply environment-specific test data:
   ```java
-  public class StockPageTests extends BaseTest {
-      @Test
-      public void verifyStockPageIsDisplayed() {
+  @Feature("Item360")
+  public class Item360Tests extends BaseTest {
+      @Test(groups = {"INT_ADM"})
+      public void navigateTo_item360Page_test() {
           verifyHomePage();
-          navigateToStockPage();
+          String productId = TestDataManager.get("item360.internalCode.id_1");
+          searchProduct(productId);
+          item360Page.assertItem360PageElements_FR();
       }
   }
   ```
 
-### Where to Add Tests for a New Country (e.g. France)
+### Where to Add Tests for a New Country (e.g. Belgium)
 
-1. **Config** — add/update `src/main/resources/config/fr.properties` with the correct URL and credentials
-2. **Page object assertions** — add a country-specific assertion method suffixed `_FR` in the relevant page class
-3. **Suite XML** — add/uncomment the test classes in `src/test/resources/suites/sanity-france.xml`
-4. Run with `-Denv=fr -Dsuite=src/test/resources/suites/sanity-france.xml`
+1. **Config** — add/update `src/main/resources/config/be.properties` with the correct URL and credentials
+2. **Test data** — create `src/test/resources/testdata/be.json` with Belgium-specific product codes, EANs, etc.
+3. **Page object assertions** — add a country-specific assertion method suffixed `_BE` in the relevant page class
+4. **Test classes** — create the `belgium/<feature>/` package under `src/test/java/.../e2e/` and add the test class
+5. **Suite XML** — create/update `src/test/resources/suites/sanity-belgium.xml`
+6. Run with `-Denv=be -Dsuite=src/test/resources/suites/sanity-belgium.xml`
+
+---
+
+## 🗂️ Test Data Management
+
+Test data is **decoupled from test code** and stored as JSON files per environment under `src/test/resources/testdata/`.
+
+| File | Environment |
+|---|---|
+| `ro.json` | Romania |
+| `fr.json` | France |
+
+`TestDataManager` loads the correct file automatically based on the `-Denv` system property (defaults to `ro`) and exposes values via dot-notation key lookup:
+
+```java
+// Reads: testdata/fr.json → item360 → internalCode → id_1
+String productId = TestDataManager.get("item360.internalCode.id_1");
+```
+
+Example `ro.json` structure:
+```json
+{
+  "countryCode": "RO",
+  "item360": {
+    "internalCode": { "id_1": "10005000", "id_2": "10005001" },
+    "ean":          { "id_1": "1234567890123", "id_2": "1234567890124" }
+  }
+}
+```
 
 ---
 
@@ -159,7 +205,7 @@ mvn clean test -Denv=ro -Dsuite=src/test/resources/suites/sanity-romania.xml
 mvn clean test -Denv=fr -Dsuite=src/test/resources/suites/sanity-france.xml
 
 # Belgium
-mvn clean test -Denv=be -Dsuite=src/test/resources/suites/sanity-romania.xml
+mvn clean test -Denv=be -Dsuite=src/test/resources/suites/sanity-belgium.xml
 ```
 
 ### Override credentials locally (without editing any file)
@@ -175,6 +221,7 @@ mvn clean test -Dtest=StockPageTests
 ```
 
 ### Run in headless mode (CI/CD)
+By default the browser launches in **headed mode** (`headless=false`). Pass `-Dbrowser.headless=true` to suppress the UI for CI pipelines:
 ```bash
 mvn clean test -Dbrowser.headless=true
 ```
@@ -202,13 +249,38 @@ This is thread-safe: if tests run in parallel, only the first thread performs th
 
 ```
 Suite starts
-  └─ @BeforeMethod fires for each test
+  └─ @BeforeSuite  → sets global assertion timeout (20 s)
+
+<test> tag starts (one per thread)
+  └─ @BeforeTest   → initialises Playwright + Chromium browser for this thread
+
+  @BeforeMethod fires for each test
         ├─ First call  → login via UI → save storageSession.json
         └─ All others  → load storageSession.json (no UI login)
+        └─ Creates isolated BrowserContext + starts Playwright trace
+
+  @AfterMethod fires after each test
+        ├─ FAILURE  → captures screenshot & saves trace .zip to target/evidence/traces/
+        └─ PASS     → discards trace (frees browser resources)
+
+<test> tag ends
+  └─ @AfterTest    → closes Browser + Playwright for this thread
 
 Suite ends
-  └─ @AfterSuite → reset storageSession.json to {}
+  └─ @AfterSuite   → resets storageSession.json to {}
 ```
+
+---
+
+## ⚡ Parallel Execution
+
+Both the Romania and France suites run `<test>` blocks **in parallel** with a thread count of 2:
+
+```xml
+<suite name="Romania_Smoke_TestSuite" parallel="tests" thread-count="2">
+```
+
+Each `<test>` block (e.g. `Homepage_Tests`, `Item360_Tests`) runs in its own thread with its own independent Playwright instance and browser, managed via `ThreadLocal` in `PlaywrightFactory`. Test classes within the same `<test>` block run sequentially.
 
 ---
 
@@ -221,36 +293,56 @@ Suite ends
 | Locators | `UPPER_SNAKE_CASE` private static final | `STOCK_PAGE_TITLE`, `OOS_CARD` |
 | Methods | `camelCase`, descriptive verb | `navigateToStockPage()`, `clickHomeMenu()` |
 | Test methods | `camelCase`, descriptive | `verifyStockPageIsDisplayed()` |
-| Country-specific assertions | method name + `_RO` / `_FR` / `_BE` suffix | `assertStockPageMainElementsAreDisplayed_RO()` |
+| Country-specific assertions | method name + `_RO` / `_FR` / `_BE` suffix | `assertItem360PageElements_FR()` |
+| Test data keys | dot-notation, `section.sub.key` | `item360.internalCode.id_1` |
 | Config properties | `noun.noun` lowercase | `app.url`, `app.username` |
 
 ---
 
 ## 📱 Device Profiles
 
-Tests run in a simulated mobile browser. The device is selected via `-Ddevice=<name>` (defaults to `Desktop` which uses a 360×720 viewport). Available profiles defined in `PlaywrightFactory`:
+Tests run in a simulated mobile browser with **geolocation pre-configured** (Bucharest, Romania by default). The device is selected via `-Ddevice=<name>` (defaults to `Desktop` which uses a 360×720 viewport). Available profiles defined in `PlaywrightFactory`:
 
-| `-Ddevice` value | Viewport | User Agent |
-|---|---|---|
-| `Desktop` (default) | 360×720 | Default Chromium |
-| `iPhone 14` | 390×844 | Safari iOS 16 |
-| `Pixel 7` | 412×915 | Chrome Android 13 |
-| `Urovo` | 360×720 | Chrome Android 12 (DT50_5G) |
+| `-Ddevice` value | Viewport | User Agent | Geolocation |
+|---|---|---|---|
+| `Desktop` (default) | 360×720 | Default Chromium | 44.439°N, 26.096°E |
+| `iPhone 14` | 390×844 | Safari iOS 16 | 44.439°N, 26.096°E |
+| `Pixel 7` | 412×915 | Chrome Android 13 | 44.439°N, 26.096°E |
+| `Urovo` | 360×720 | Chrome Android 12 (DT50_5G) | 44.439°N, 26.096°E |
 
 Example:
 ```bash
 mvn clean test -Ddevice=Urovo
 ```
 
+All profiles also set `isMobile=true`, `hasTouch=true`, and grant the `geolocation` browser permission automatically.
+
 ---
 
 ## 🐛 Failure Evidence
 
 On test failure, `EvidenceManager` automatically:
-- Attaches a **full-page screenshot** to the Allure report
-- Saves a **Playwright trace** (`.zip`) to `target/evidence/traces/`
+- Attaches a **full-page screenshot** to the Allure report (in-memory, no disk write)
+- Saves a **Playwright trace** (`.zip`) to `target/evidence/traces/` and attaches a plain-text path note to the Allure report
+
+Tracing is started at `@BeforeMethod` with **screenshots**, **DOM snapshots**, and **source files** captured, giving a complete step-by-step replay on failure.
 
 Traces can be opened at [trace.playwright.dev](https://trace.playwright.dev) for step-by-step visual replay.
+
+On test **pass**, the open trace is discarded cleanly via `EvidenceManager.discardTrace()` to free browser resources.
+
+---
+
+## 📊 Allure Environment Metadata
+
+The `environment.properties` file (in `src/main/resources/`) is automatically copied into `target/allure-results/` at build time by the `maven-resources-plugin`. It surfaces the following details on the Allure report's **Environment** widget:
+
+| Key | Value |
+|---|---|
+| `Country` | Active `-Denv` value (e.g. `ro`, `fr`) |
+| `URL` | Active `app.url` property |
+| `Username` | Active `app.username` property |
+| `Device` | Active `-Ddevice` value |
 
 ---
 
