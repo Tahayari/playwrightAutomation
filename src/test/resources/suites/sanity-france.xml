@@ -13,22 +13,17 @@
         </classes>
     </test>
 
-<!--    <test name="Item360_Tests">-->
-<!--        <classes>-->
-<!--            <class name="item360.e2e.com.carrefour.ucare.Item360Tests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Item360_Tests">
+        <classes>
+            <class name="com.carrefour.ucare.e2e.france.item360.Item360Tests"/>
+        </classes>
+    </test>
 
 <!--    <test name="StockPage_Tests">-->
 <!--        <classes>-->
-<!--            <class name="stock.e2e.com.carrefour.ucare.StockPageTests"/>-->
+<!--            <class name="com.carrefour.ucare.e2e.StockPageTests"/>-->
 <!--        </classes>-->
 <!--    </test>-->
 
-<!--    <test name="MePage_Tests">-->
-<!--        <classes>-->
-<!--            <class name="me.e2e.com.carrefour.ucare.MePageTests"/>-->
-<!--        </classes>-->
-<!--    </test>-->
 
 </suite>

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Product Defects (Assertion Failures)",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*AssertionError.*|.*PageAssertions.*|.*LocatorAssertions.*"
+  },
+  {
+    "name": "UI & Timeout Issues (Slow Rendering / Missing Locators)",
+    "matchedStatuses": ["failed", "broken"],
+    "messageRegex": ".*Timeout.*exceeded.*|.*waiting for locator.*|.*element is not visible.*|.*element is not enabled.*"
+  },
+  {
+    "name": "Environment & Network Failures (Server / API Errors)",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*ERR_NAME_NOT_RESOLVED.*|.*ERR_CONNECTION_REFUSED.*|.*50[0-9].*|.*40[0-9].*"
+  },
+  {
+    "name": "Infrastructure Failures (Browser / Context Crashes)",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*Target page, context or browser has been closed.*|.*PlaywrightException.*|.*Browser closed.*"
+  },
+  {
+    "name": "Skipped / Disabled Tests",
+    "matchedStatuses": ["skipped"]
+  }
+]

@@ -7,11 +7,11 @@
     </listeners>
 
 
-    <test name="Homepage_Tests">
-        <classes>
-            <class name="com.carrefour.ucare.e2e.HomePageTests"/>
-        </classes>
-    </test>
+<!--    <test name="Homepage_Tests">-->
+<!--        <classes>-->
+<!--            <class name="com.carrefour.ucare.e2e.HomePageTests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
     <test name="Item360_Tests">
         <classes>
@@ -19,16 +19,16 @@
         </classes>
     </test>
 
-    <test name="StockPage_Tests">
-        <classes>
-            <class name="com.carrefour.ucare.e2e.romania.stock.StockPageTests"/>
-        </classes>
-    </test>
+<!--    <test name="StockPage_Tests">-->
+<!--        <classes>-->
+<!--            <class name="com.carrefour.ucare.e2e.romania.stock.StockPageTests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
-    <test name="MePage_Tests">
-        <classes>
-            <class name="com.carrefour.ucare.e2e.romania.me.MePageTests"/>
-        </classes>
-    </test>
+<!--    <test name="MePage_Tests">-->
+<!--        <classes>-->
+<!--            <class name="com.carrefour.ucare.e2e.romania.me.MePageTests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 </suite>

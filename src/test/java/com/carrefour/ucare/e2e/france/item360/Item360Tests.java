@@ -1,4 +1,4 @@
-package com.carrefour.ucare.e2e.romania.item360;
+package com.carrefour.ucare.e2e.france.item360;
 
 import com.carrefour.ucare.e2e.BaseTest;
 import io.qameta.allure.Description;
@@ -13,8 +13,8 @@ public class Item360Tests extends BaseTest {
     public void navigateTo_item360Page_test() {
         verifyHomePage();
 
-        searchProduct("10005000");
+        searchProduct("0022133");
 
-        item360Page.assertItem360PageElements_RO();
+        item360Page.assertItem360PageElements_FR();
     }
 }
