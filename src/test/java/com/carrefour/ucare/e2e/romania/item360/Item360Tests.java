@@ -14,7 +14,7 @@ public class Item360Tests extends BaseTest {
     public void navigateTo_item360Page_test() {
         verifyHomePage();
 
-        String testData = TestDataManager.get("item360.internalCode.id_2");
+        String testData = TestDataManager.get("item360.internalCode.id_1");
         searchProduct(testData);
         item360Page.assertItem360PageElements_RO();
     }

@@ -26,6 +26,7 @@
         <allure-maven.version>2.13.0</allure-maven.version>
         <aspectj.version>1.9.21</aspectj.version>
         <allure.results.dir>${project.build.directory}/allure-results</allure.results.dir>
+        <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <device>Desktop</device>
     </properties>
 
@@ -39,7 +40,7 @@
                 <configuration>
                     <java>
                         <!-- Removes unused imports automatically -->
-                        <removeUnusedImports />
+                        <removeUnusedImports/>
 
                         <!-- Enforces official Google Java formatting standards -->
                         <googleJavaFormat>
@@ -108,31 +109,6 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>${maven-resources-plugin.version}</version>
                 <executions>
-<!--                    <execution>-->
-<!--                        <id>copy-allure-environment</id>-->
-<!--                        <phase>process-test-resources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>copy-resources</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <outputDirectory>${basedir}/target/allure-results</outputDirectory>-->
-<!--                            <resources>-->
-<!--                                <resource>-->
-<!--                                    <directory>src/main/resources</directory>-->
-<!--                                    <includes>-->
-<!--                                        <include>environment.properties</include>-->
-<!--                                    </includes>-->
-<!--                                </resource>-->
-<!--                                <resource>-->
-<!--                                    <directory>src/main/resources</directory>-->
-<!--                                    <filtering>true</filtering>-->
-<!--                                    <includes>-->
-<!--                                        <include>environment.properties</include>-->
-<!--                                    </includes>-->
-<!--                                </resource>-->
-<!--                            </resources>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                     <execution>
                         <id>copy-allure-categories</id>
                         <phase>process-test-resources</phase>
@@ -151,6 +127,25 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-allure-environment</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -161,6 +156,25 @@
                     <source>11</source>
                     <target>11</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>src/main/resources/config/${env}.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

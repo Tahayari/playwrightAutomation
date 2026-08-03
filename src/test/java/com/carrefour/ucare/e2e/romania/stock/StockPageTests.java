@@ -1,6 +1,7 @@
 package com.carrefour.ucare.e2e.romania.stock;
 
 import com.carrefour.ucare.e2e.BaseTest;
+import com.carrefour.ucare.utilities.TestDataManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import org.testng.annotations.Test;
@@ -20,6 +21,7 @@ public class StockPageTests extends BaseTest {
     public void navigateTo_Item360fromStockPage_success_test() {
         verifyHomePage();
         navigateToStockPage();
-        searchProduct("10005000");
+        String testData = TestDataManager.get("item360.internalCode.id_1");
+        searchProduct(testData);
     }
 }
