@@ -1,6 +1,7 @@
 package com.carrefour.ucare.e2e.france.item360;
 
 import com.carrefour.ucare.e2e.BaseTest;
+import com.carrefour.ucare.utilities.TestDataManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import org.testng.annotations.Test;
@@ -13,7 +14,8 @@ public class Item360Tests extends BaseTest {
     public void navigateTo_item360Page_test() {
         verifyHomePage();
 
-        searchProduct("0022133");
+        String testData = TestDataManager.get("item360.internalCode.id_1");
+        searchProduct(testData);
 
         item360Page.assertItem360PageElements_FR();
     }

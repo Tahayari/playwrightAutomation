@@ -65,7 +65,7 @@ public class Item360Page extends BasePage {
 
     // ── Assertions FRANCE-ONLY ───────────────────────────────────────────
 
-    public void assertItem360PageElements_FR(){
+    public void assertItem360PageElements_FR() {
         assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
         assertThat(page.locator(PRODUCT_GTIN_ID)).isVisible();
         assertThat(page.locator(PRODUCT_INTERNAL_CODE_ID)).isVisible();
