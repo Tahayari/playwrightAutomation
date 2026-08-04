@@ -2,11 +2,14 @@ package com.carrefour.ucare.utilities;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.Geolocation;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class PlaywrightFactory {
     private static final ThreadLocal<Playwright> playwrightTL = new ThreadLocal<>();
@@ -24,11 +27,21 @@ public class PlaywrightFactory {
             playwrightTL.set(Playwright.create());
         }
         if (browserTL.get() == null || !browserTL.get().isConnected()) {
+
+            String cliHeadless = System.getProperty("headless");
+            String envHeadless = getEnvFileProperty("Headless");
+
+            String finalHeadlessValue =
+                    (cliHeadless != null)
+                            ? cliHeadless
+                            : (envHeadless != null ? envHeadless : "false");
+            boolean isHeadless = Boolean.parseBoolean(finalHeadlessValue.trim());
+
             browserTL.set(
                     playwrightTL
                             .get()
                             .chromium()
-                            .launch(new BrowserType.LaunchOptions().setHeadless(false)));
+                            .launch(new BrowserType.LaunchOptions().setHeadless(isHeadless)));
         }
     }
 
@@ -133,5 +146,23 @@ public class PlaywrightFactory {
                         .setDeviceScaleFactor(2.0)
                         .setIsMobile(true)
                         .setHasTouch(true));
+    }
+
+    /** Reads a key directly from environment.properties on the classpath */
+    private static String getEnvFileProperty(String key) {
+        Properties properties = new Properties();
+        try (InputStream input =
+                PlaywrightFactory.class
+                        .getClassLoader()
+                        .getResourceAsStream("environment.properties")) {
+            if (input != null) {
+                properties.load(input);
+                return properties.getProperty(key);
+            }
+        } catch (IOException e) {
+            System.err.println(
+                    "Warning: Unable to load environment.properties file: " + e.getMessage());
+        }
+        return null;
     }
 }
