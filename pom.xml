@@ -1,0 +1,220 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>playwrightAutomation</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>playwrightAutomation</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <!-- Defaults — overridden at the command line with -Denv=be/ro/fr -->
+        <env>ro</env>
+        <suite>src/test/resources/suites/sanity-romania.xml</suite>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spotless.version>3.6.0</spotless.version>
+        <playwright.version>1.58.0</playwright.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <testng.version>7.11.0</testng.version>
+        <allure.version>2.27.0</allure.version>
+        <allure-maven.version>2.13.0</allure-maven.version>
+        <aspectj.version>1.9.21</aspectj.version>
+        <allure.results.dir>${project.build.directory}/allure-results</allure.results.dir>
+        <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+        <device>Desktop</device>
+    </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <!-- Removes unused imports automatically -->
+                        <removeUnusedImports/>
+
+                        <!-- Enforces official Google Java formatting standards -->
+                        <googleJavaFormat>
+                            <version>1.22.0</version>
+                            <style>AOSP</style> <!-- Optional: AOSP style uses 4 spaces instead of 2 for indentation -->
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- Automatically formats your code during 'mvn compile' or 'mvn test' -->
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+    Surefire must launch the JVM with the AspectJ agent so @Step
+    annotations are intercepted at runtime.
+    -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                        -Dallure.results.directory=${allure.results.dir}
+                        -Dallure.link.issue.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Dallure.link.tms.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Denv=${env}
+                    </argLine>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suite}</suiteXmlFile>
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+
+            <!-- Generates the static HTML report from target/allure-results -->
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>${allure-maven.version}</version>
+                <configuration>
+                    <!--
+                        reportVersion must match allure-testng so the CLI that generates
+                        the HTML understands the JSON format the listener wrote.
+                        Without this, allure-maven downloads CLI 2.20.1 but the results
+                        were written by 2.27.0 — a format mismatch.
+                    -->
+                    <reportVersion>${allure.version}</reportVersion>
+                    <!--
+                        Explicitly point the plugin to the same directory Surefire
+                        told allure-testng to write into.
+                    -->
+                    <resultsDirectory>${allure.results.dir}</resultsDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-allure-categories</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <includes>
+                                        <include>categories.json</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-allure-environment</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>environment.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>src/main/resources/config/${env}.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <!-- Source: https://mvnrepository.com/artifact/com.microsoft.playwright/playwright -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
+        </dependency>
+
+        <!-- Source: https://mvnrepository.com/artifact/org.testng/testng -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+            <version>${allure.version}</version>
+        </dependency>
+
+        <!--
+            AspectJ weaver — required for @Step annotations to appear
+            as timeline entries in the report. Without it, tests still
+            pass/fail correctly but no step breakdown is shown.
+        -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
