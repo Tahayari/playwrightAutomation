@@ -19,7 +19,7 @@ public class LoginPage {
     // ── Methods ───────────────────────────────────────────────────────────
 
     public HomePage login(String username, String password) {
-        String env = System.getProperty("env").toLowerCase();
+        String env = System.getProperty("env", "ro").toLowerCase();
         page.fill(LOGIN_INPUT, username);
         page.fill(PASSWORD_INPUT, password);
         page.click(SIGN_IN_BUTTON);
