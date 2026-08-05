@@ -1,43 +1,35 @@
 # 🎭 Playwright UI Automation Framework
 
-A modern, enterprise-grade mobile web automation testing framework built with **Playwright**, **TestNG**, and **Java**. This framework is designed for automated end-to-end testing of mobile web applications with efficient session management, retry mechanisms, and parallel test execution support.
+A mobile web automation testing framework built with **Playwright**, **TestNG**, and **Java**, designed for end-to-end testing of the uCare application across multiple country environments.
 
 ---
 
 ## 🛠️ Technologies & Libraries
 
-### Core Technologies
-![Java](https://img.shields.io/badge/Java-11+-ED8B00?style=flat-square&logo=java&logoColor=white)
-![Playwright](https://img.shields.io/badge/Playwright-1.40+-2EAD33?style=flat-square&logo=playwright&logoColor=white)
-![TestNG](https://img.shields.io/badge/TestNG-7.8+-FF6B35?style=flat-square&logo=testng&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36?style=flat-square&logo=apache-maven&logoColor=white)
-
-### Build & Testing
-![Selenium](https://img.shields.io/badge/Selenium-Compatible-04B431?style=flat-square&logo=selenium&logoColor=white)
-![JUnit](https://img.shields.io/badge/JUnit-4.13+-25A162?style=flat-square&logo=junit5&logoColor=white)
-
-### Mobile Testing
-![Android](https://img.shields.io/badge/Android-API%2012+-3DDC84?style=flat-square&logo=android&logoColor=white)
-![Mobile Web](https://img.shields.io/badge/Mobile%20Web-Chromium-4285F4?style=flat-square&logo=google-chrome&logoColor=white)
-
-### Code Quality & Utilities
-![SLF4J](https://img.shields.io/badge/SLF4J-1.7+-336699?style=flat-square)
-![Logback](https://img.shields.io/badge/Logback-1.4+-2C5AA0?style=flat-square)
+| Technology | Version | Purpose |
+|---|---|---|
+| Java | 11+ | Core language |
+| Playwright (Java) | 1.58.0 | Browser automation |
+| TestNG | 7.11.0 | Test runner & lifecycle hooks |
+| Maven | 3.9+ | Build & dependency management |
+| Allure TestNG | 2.27.0 | Test reporting |
+| AspectJ Weaver | 1.9.21 | Allure `@Step` instrumentation |
+| Spotless (Google Java Format) | 3.6.0 | Auto code formatting on compile |
 
 ---
 
-## 📋 Project Overview
+## ✅ Prerequisites
 
-This automation framework provides:
+Before running tests, make sure you have the following installed:
 
-✅ **Mobile Web Testing** - Simulate Android devices (360x720 viewport, touch events)  
-✅ **Session Persistence** - Login once, reuse credentials across test suite  
-✅ **Page Object Model** - Clean separation of UI elements and test logic  
-✅ **Retry Mechanism** - Automatic flaky test retry with configurable logic  
-✅ **Configuration Management** - Externalized properties for URL, credentials, timeouts  
-✅ **Geolocation Simulation** - Test location-based features  
-✅ **Screenshot & Logging** - Detailed logs and visual debugging  
-✅ **TestNG Integration** - Powerful test execution with listeners and parallel support  
+- **Java JDK 11+** — verify with `java -version`
+- **Maven 3.9+** — verify with `mvn -version`
+- **Playwright browsers** — installed automatically on first `mvn test`. If needed manually:
+  ```bash
+  mvn exec:java -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install chromium"
+  ```
+
+No separate WebDriver or browser drivers required — Playwright manages its own browser binaries.
 
 ---
 
@@ -47,447 +39,311 @@ This automation framework provides:
 playwrightAutomation/
 ├── src/
 │   ├── main/
-│   │   ├── java/ro/carrefour/ucare/
-│   │   │   ├── app/
-│   │   │   │   ├── BasePage.java              # Base class for all page objects
-│   │   │   │   ├── HomePage.java              # Home page object
-│   │   │   │   ├── LoginPage.java             # Login page object
-│   │   │   │   └── Item360Page.java           # Product detail page object
+│   │   ├── java/com/carrefour/ucare/
+│   │   │   ├── BasePage.java              # Base page: shared locators, methods & assertions
+│   │   │   ├── HomePage.java              # Home page locators, methods & assertions
+│   │   │   ├── LoginPage.java             # Login page locators, methods & assertions
+│   │   │   ├── Item360Page.java           # Item360 page locators, methods & assertions (_RO / _FR)
+│   │   │   ├── me/
+│   │   │   │   └── MePage.java            # Me page locators, methods & assertions
+│   │   │   ├── stock/
+│   │   │   │   └── StockPage.java         # Stock page locators, methods & assertions
 │   │   │   └── utilities/
-│   │   │       ├── ConfigManager.java         # Application config (singleton)
-│   │   │       ├── AuthStateManager.java      # Auth state file management
-│   │   │       ├── PlaywrightFactory.java     # Playwright context factory
-│   │   │       ├── RetryAnalyzer.java         # Custom retry logic
-│   │   │       └── RetryListener.java         # TestNG retry listener
+│   │   │       ├── ConfigManager.java     # Loads config/[env].properties (singleton)
+│   │   │       ├── AuthStateManager.java  # Manages the session file (login-once logic)
+│   │   │       ├── PlaywrightFactory.java # Creates BrowserContext with device profiles
+│   │   │       ├── EvidenceManager.java   # Captures screenshots & traces on failure
+│   │   │       ├── TestDataManager.java   # Loads testdata/[env].json; dot-notation key lookup
+│   │   │       ├── RetryAnalyzer.java     # Retry logic for flaky tests
+│   │   │       └── RetryListener.java     # TestNG listener that wires in RetryAnalyzer
 │   │   └── resources/
-│   │       ├── environment.properties         # App URL, credentials, timeouts
-│   │       └── storageSession.json            # Saved browser session state
+│   │       ├── config/
+│   │       │   ├── ro.properties          # Romania environment config (URL, credentials)
+│   │       │   ├── fr.properties          # France environment config
+│   │       │   └── be.properties          # Belgium environment config
+│   │       ├── environment.properties     # Allure environment metadata (country, URL, device)
+│   │       └── storageSession.json        # Saved browser session (auto-generated at runtime)
 │   └── test/
-│       └── java/ro/carrefour/ucare/
-│           ├── app/
-│           │   ├── BaseTest.java              # Base test class (lifecycle hooks)
-│           │   ├── HomePageTests.java         # Home page test suite
-│           │   ├── LoginPageTests.java        # Login page test suite
-│           │   └── item360/
-│           │       └── Item360Tests.java      # Product detail test suite
-├── pom.xml                                     # Maven dependencies & configuration
-├── testng.xml                                  # TestNG suite configuration
-├── parallel_tests.xml                          # Parallel execution configuration
-└── README.md                                   # This file
+│       ├── java/com/carrefour/ucare/e2e/
+│       │   ├── romania/
+│       │   │   ├── item360/
+│       │   │   │   └── Item360Tests.java      # Item360 test cases (Romania)
+│       │   │   ├── stock/
+│       │   │   │   └── StockPageTests.java    # Stock page test cases
+│       │   │   └── me/
+│       │   │       └── MePageTests.java       # Me page test cases
+│       │   ├── france/
+│       │   │   └── item360/
+│       │   │       └── Item360Tests.java      # Item360 test cases (France)
+│       │   ├── BaseTest.java              # Test lifecycle (@Before/@After hooks, login)
+│       │   ├── HomePageTests.java         # Home page test cases
+│       │   └── LoginPageTests.java        # Login page test cases
+│       └── resources/
+│           ├── categories.json            # Categories used in Allure report
+│           ├── testdata/
+│           │   ├── ro.json                # Test data for Romania (product codes, EANs, etc.)
+│           │   └── fr.json                # Test data for France
+│           └── suites/
+│               ├── sanity-romania.xml     # TestNG suite for Romania (parallel, thread-count=2)
+│               └── sanity-france.xml      # TestNG suite for France (parallel, thread-count=2)
+└── pom.xml
 ```
 
 ---
 
-## 🏗️ Architecture & Design Patterns
+## 🏗️ POM Structure — Where Things Live
 
-### Page Object Model (POM)
-Each page is represented as a class with:
-- UI element locators (as constants)
-- User interaction methods
-- Assertions and validations
+### Page Objects (`src/main/java/.../`)
 
-**Example:**
+Each page of the app has its own class (e.g. `StockPage.java`, `HomePage.java`). Inside each page object:
+
+- **Locators** — defined as `private static final String` constants at the top of the class:
+  ```java
+  private static final String STOCK_PAGE_TITLE = "#stock-title";
+  private static final String OOS_CARD = "//div[@data-testid='stock-carousel']/div[1]";
+  ```
+
+- **Methods** — encapsulate user interactions with the page (grouped under a `// ── Methods ──` comment):
+  ```java
+  public void navigateToStockPage() {
+      page.locator(STOCK_FOOTER_MENU).click();
+  }
+  ```
+
+- **Assertions** — verify expected page state (grouped under `// ── Assertions ──` comments). Country-specific assertions are suffixed with `_RO`, `_FR`, etc.:
+  ```java
+  public void assertItem360PageElements_RO() {
+      assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
+      assertThat(page.locator(GO_TO_PRICE_AUDIT_ID)).isVisible();
+      // ...
+  }
+
+  public void assertItem360PageElements_FR() {
+      assertThat(page.locator(PRODUCT_BRAND_ID)).isVisible();
+      assertThat(page.locator(RECOMMENDED_PRICE_ID)).isVisible();
+      // ...
+  }
+  ```
+
+`BasePage.java` holds locators and methods/assertions that are shared across all pages (e.g. footer navigation, search input).
+
+### Test Classes (`src/test/java/.../e2e/`)
+
+Test classes are organised by **country package** (`romania/`, `france/`) and then by **feature area** (`item360/`, `stock/`, `me/`). Each test class extends `BaseTest` and focuses on a single page/feature area.
+
+- Write tests here — **not** in page objects
+- Each `@Test` method should represent one independent scenario
+- Use page object methods to interact with the app; use Allure `@Step` / `step()` to document what each step does
+- Use `TestDataManager.get("key.path")` to supply environment-specific test data:
+  ```java
+  @Feature("Item360")
+  public class Item360Tests extends BaseTest {
+      @Test(groups = {"INT_ADM"})
+      public void navigateTo_item360Page_test() {
+          verifyHomePage();
+          String productId = TestDataManager.get("item360.internalCode.id_1");
+          searchProduct(productId);
+          item360Page.assertItem360PageElements_FR();
+      }
+  }
+  ```
+
+### Where to Add Tests for a New Country (e.g. Belgium)
+
+1. **Config** — add/update `src/main/resources/config/be.properties` with the correct URL and credentials
+2. **Test data** — create `src/test/resources/testdata/be.json` with Belgium-specific product codes, EANs, etc.
+3. **Page object assertions** — add a country-specific assertion method suffixed `_BE` in the relevant page class
+4. **Test classes** — create the `belgium/<feature>/` package under `src/test/java/.../e2e/` and add the test class
+5. **Suite XML** — create/update `src/test/resources/suites/sanity-belgium.xml`
+6. Run with `-Denv=be -Dsuite=src/test/resources/suites/sanity-belgium.xml`
+
+---
+
+## 🗂️ Test Data Management
+
+Test data is **decoupled from test code** and stored as JSON files per environment under `src/test/resources/testdata/`.
+
+| File | Environment |
+|---|---|
+| `ro.json` | Romania |
+| `fr.json` | France |
+
+`TestDataManager` loads the correct file automatically based on the `-Denv` system property (defaults to `ro`) and exposes values via dot-notation key lookup:
+
 ```java
-public class HomePage extends BasePage {
-    public static final String homeFooterMenu = "[data-qa='home-menu']";
-    
-    public void clickHomeMenu() {
-        page.click(homeFooterMenu);
-    }
+// Reads: testdata/fr.json → item360 → internalCode → id_1
+String productId = TestDataManager.get("item360.internalCode.id_1");
+```
+
+Example `ro.json` structure:
+```json
+{
+  "countryCode": "RO",
+  "item360": {
+    "internalCode": { "id_1": "10005000", "id_2": "10005001" },
+    "ean":          { "id_1": "1234567890123", "id_2": "1234567890124" }
+  }
 }
 ```
 
-### Singleton Pattern
-**ConfigManager** - Loads environment properties once, reused across all tests
-```java
-ConfigManager cfg = ConfigManager.getInstance();
-String url = cfg.getProperty("app.url");
-```
-
-### Factory Pattern
-**PlaywrightFactory** - Creates BrowserContext with mobile device simulation options
-```java
-BrowserContext ctx = factory.createMobileContext(true); // with saved auth
-```
-
-### Manager Pattern
-**AuthStateManager** - Encapsulates browser session state file operations
-```java
-authManager.save(context);
-authManager.exists();
-authManager.clear();
-```
-
 ---
 
-## 🚀 Getting Started
+## 🚀 Running Tests via Maven
 
-### Prerequisites
-
-Before setting up the project, ensure you have:
-
-- **Java Development Kit (JDK)** 11 or higher
-  - Download: https://www.oracle.com/java/technologies/downloads/
-  - Verify: `java -version`
-
-- **Maven** 3.9 or higher
-  - Download: https://maven.apache.org/download.cgi
-  - Verify: `mvn -version`
-
-- **Git** (optional, for version control)
-  - Download: https://git-scm.com/
-
-### Installation & Setup
-
-#### 1. **Clone or Download the Project**
-```bash
-git clone <repository-url>
-cd playwrightAutomation
-```
-
-#### 2. **Install Dependencies**
-Maven will automatically download all dependencies from `pom.xml`:
-```bash
-mvn clean install
-```
-
-This command:
-- Cleans previous builds
-- Downloads Playwright, TestNG, and other dependencies
-- Compiles the project
-- Installs Playwright browsers (Chromium)
-
-#### 3. **Configure Application Settings**
-
-Edit `src/main/resources/environment.properties`:
-
-```properties
-# Application URL
-app.url=https://app.example.com/
-
-# Login Credentials
-app.username=your_email@example.com
-app.password=your_password
-
-# Timeouts (milliseconds)
-global.timeout=20000
-
-# Browser Settings
-browser.headless=false
-```
-
-⚠️ **Security Note**: Never commit real credentials. Use environment variables in CI/CD:
-```bash
-# Set via environment
-export APP_USERNAME="user@example.com"
-export APP_PASSWORD="password123"
-```
-
-#### 4. **Verify Playwright Installation**
-```bash
-mvn exec:java -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="--version"
-```
-
----
-
-## 🧪 Running Tests
-
-### Run All Tests
+### Default (Romania, sanity suite)
 ```bash
 mvn clean test
 ```
+This runs `sanity-romania.xml` with `env=ro` as defined by the defaults in `pom.xml`.
 
-### Run Specific Test Suite (from testng.xml)
+### Specify a country / suite
 ```bash
-mvn clean test -DsuiteXmlFile=testng.xml
+# Romania
+mvn clean test -Denv=ro -Dsuite=src/test/resources/suites/sanity-romania.xml
+
+# France
+mvn clean test -Denv=fr -Dsuite=src/test/resources/suites/sanity-france.xml
+
+# Belgium
+mvn clean test -Denv=be -Dsuite=src/test/resources/suites/sanity-belgium.xml
 ```
 
-### Run Parallel Tests
+### Override credentials locally (without editing any file)
+`ConfigManager` always prefers system properties over the values in the `.properties` file, so you can pass credentials on the command line:
+
 ```bash
-mvn clean test -DsuiteXmlFile=parallel_tests.xml
+mvn clean test -Denv=ro -Dapp.username=myuser@example.com -Dapp.password=mypassword
 ```
 
-### Run Specific Test Class
+### Run a specific test class
 ```bash
-mvn clean test -Dtest=HomePageTests
+mvn clean test -Dtest=StockPageTests
 ```
 
-### Run Tests in Headless Mode (CI/CD)
+### Run in headless mode (CI/CD)
+By default the browser launches in **headed mode** (`headless=false`). Pass `-Dbrowser.headless=true` to suppress the UI for CI pipelines:
 ```bash
 mvn clean test -Dbrowser.headless=true
 ```
 
-### Run with Detailed Logging
+### Generate and open the Allure report
 ```bash
-mvn clean test -X
+mvn allure:report       # generates HTML into target/site/allure-maven-plugin/
+mvn allure:serve        # builds and opens in browser
 ```
 
 ---
 
-## 📝 Test Execution Flow
+## 🔐 Login Flow & Session Management
+
+Login is performed **once per suite run**, not before every test.
+
+**How it works:**
+
+1. Before the first test method runs, `AuthStateManager.ensureAuthState()` checks whether a valid session file (`src/main/resources/storageSession.json`) already exists.
+2. If it doesn't, a temporary browser context is created, a full login is performed against the app, and Playwright's storage state (cookies + local storage) is serialised to `storageSession.json`.
+3. All subsequent test contexts load that saved session file — no login UI interaction needed.
+4. At the end of the suite (`@AfterSuite`), the session file is reset to `{}` so the next run always starts fresh and avoids stale/expired sessions.
+
+This is thread-safe: if tests run in parallel, only the first thread performs the login; all others wait and then load the already-saved file.
 
 ```
-@BeforeSuite
-    ↓
-Create Playwright & Browser (once per suite)
-    ↓
-@BeforeTest (per test tag in XML)
-    ↓
-IF first test:
-    - Create context
-    - Login & save credentials to storageState.json
-ELSE:
-    - Load saved credentials from storageState.json
-    ↓
-@BeforeMethod
-    ↓
-Create new Page from context
-Navigate to app.url
-    ↓
-Test Execution (test methods)
-    ↓
-@AfterMethod
-    Close Page
-    ↓
-@AfterTest
-    Close Context
-    ↓
-@AfterSuite
-    Close Browser & Playwright
-    Clear auth state
-```
+Suite starts
+  └─ @BeforeSuite  → sets global assertion timeout (20 s)
 
----
+<test> tag starts (one per thread)
+  └─ @BeforeTest   → initialises Playwright + Chromium browser for this thread
 
-## 🔐 Session Management & Authentication
+  @BeforeMethod fires for each test
+        ├─ First call  → login via UI → save storageSession.json
+        └─ All others  → load storageSession.json (no UI login)
+        └─ Creates isolated BrowserContext + starts Playwright trace
 
-### Login-Once Pattern
+  @AfterMethod fires after each test
+        ├─ FAILURE  → captures screenshot & saves trace .zip to target/evidence/traces/
+        └─ PASS     → discards trace (frees browser resources)
 
-The framework implements an efficient session reuse strategy:
+<test> tag ends
+  └─ @AfterTest    → closes Browser + Playwright for this thread
 
-1. **First Test**: Logs in → Saves browser state to `target/playwright/storageState.json`
-2. **Subsequent Tests**: Loads saved state → Skips login → Time savings!
-
-**How It Works:**
-```java
-if (!isLoggedIn) {
-    // First test: perform login
-    login();
-    context.storageState(new BrowserContext.StorageStateOptions()
-        .setPath(authManager.getPath()));
-    isLoggedIn = true;
-} else {
-    // Subsequent tests: reuse saved credentials
-    context = browser.newContext(new Browser.NewContextOptions()
-        .setStorageStatePath(authManager.getPath()));
-}
-```
-
-**Benefits:**
-- ⚡ Reduces test execution time by 40-60%
-- 🔒 Cookies, session tokens, and local storage preserved
-- 🎯 Multiple tests run with single login
-
----
-
-## 📱 Mobile Device Simulation
-
-Tests run with mobile device configuration:
-
-| Setting | Value                                |
-|---------|--------------------------------------|
-| **Device** | Android Mobile                       |
-| **Viewport** | 360x720 pixels                       |
-| **Scale Factor** | 2.0                                  |
-| **User Agent** | Chrome Mobile (Android 12)           |
-| **Touch Events** | Enabled                              |
-| **Geolocation** | București, Romania (44.439, 26.0963) |
-
-To modify, edit `BaseTest.java`:
-```java
-private final int MOBILE_WIDTH = 360;
-private final int MOBILE_HEIGHT = 720;
-private final Geolocation GEO_COORDINATES = new Geolocation(44.439, 26.0963);
+Suite ends
+  └─ @AfterSuite   → resets storageSession.json to {}
 ```
 
 ---
 
-## 🔧 Configuration Files
+## ⚡ Parallel Execution
 
-### `testng.xml`
-Main test suite with test grouping and listeners:
+Both the Romania and France suites run `<test>` blocks **in parallel** with a thread count of 2:
+
 ```xml
-<suite name="Full_UAT_Suite">
-    <listeners>
-        <listener class-name="ro.carrefour.ucare.utilities.RetryListener"/>
-    </listeners>
-    <test name="Homepage_Tests">
-        <classes>
-            <class name="ro.carrefour.ucare.app.HomePageTests"/>
-        </classes>
-    </test>
-</suite>
+<suite name="Romania_Smoke_TestSuite" parallel="tests" thread-count="2">
 ```
 
-### `environment.properties`
-Application configuration (URL, credentials, timeouts)
-
-### `pom.xml`
-Maven project configuration with all dependencies
+Each `<test>` block (e.g. `Homepage_Tests`, `Item360_Tests`) runs in its own thread with its own independent Playwright instance and browser, managed via `ThreadLocal` in `PlaywrightFactory`. Test classes within the same `<test>` block run sequentially.
 
 ---
 
-## ✨ Key Features Explained
+## 📐 Naming Conventions
 
-### 1. **Retry Mechanism**
-Flaky tests automatically retry using `RetryAnalyzer`:
-```java
-@Test(retryAnalyzer = RetryAnalyzer.class)
-public void myTest() {
-    // Will retry 3 times on failure
-}
-```
-
-### 2. **Page Object Model**
-Clean UI locator management:
-```java
-public class HomePage extends BasePage {
-    public static final String SEARCH_INPUT = "#search-box";
-    public static final String SEARCH_BUTTON = "button[type='submit']";
-    
-    public void searchProduct(String query) {
-        page.fill(SEARCH_INPUT, query);
-        page.click(SEARCH_BUTTON);
-    }
-}
-```
-
-### 3. **Assertions**
-Playwright built-in assertions with auto-retries:
-```java
-assertThat(page.locator(".header")).isVisible();
-assertThat(page.locator("input")).hasValue("expected");
-```
-
-### 4. **Configuration Management**
-Single source of truth for test data:
-```java
-String url = ConfigManager.getInstance().getProperty("app.url");
-```
+| Element | Convention | Example |
+|---|---|---|
+| Page object classes | `PascalCase` + `Page` suffix | `StockPage`, `HomePage` |
+| Test classes | `PascalCase` + `Tests` suffix | `StockPageTests`, `HomePageTests` |
+| Locators | `UPPER_SNAKE_CASE` private static final | `STOCK_PAGE_TITLE`, `OOS_CARD` |
+| Methods | `camelCase`, descriptive verb | `navigateToStockPage()`, `clickHomeMenu()` |
+| Test methods | `camelCase`, descriptive | `verifyStockPageIsDisplayed()` |
+| Country-specific assertions | method name + `_RO` / `_FR` / `_BE` suffix | `assertItem360PageElements_FR()` |
+| Test data keys | dot-notation, `section.sub.key` | `item360.internalCode.id_1` |
+| Config properties | `noun.noun` lowercase | `app.url`, `app.username` |
 
 ---
 
-## 📚 Writing New Tests
+## 📱 Device Profiles
 
-### Step 1: Create Page Object
-```java
-public class MyPage extends BasePage {
-    public static final String BUTTON = "#myButton";
-    
-    public void clickButton() {
-        page.click(BUTTON);
-    }
-}
-```
+Tests run in a simulated mobile browser with **geolocation pre-configured** (Bucharest, Romania by default). The device is selected via `-Ddevice=<name>` (defaults to `Desktop` which uses a 360×720 viewport). Available profiles defined in `PlaywrightFactory`:
 
-### Step 2: Create Test Class
-```java
-public class MyTests extends BaseTest {
-    
-    @Test
-    public void testMyFeature() {
-        MyPage myPage = new MyPage(page);
-        myPage.clickButton();
-        // Add assertions
-    }
-}
-```
+| `-Ddevice` value | Viewport | User Agent | Geolocation |
+|---|---|---|---|
+| `Desktop` (default) | 360×720 | Default Chromium | 44.439°N, 26.096°E |
+| `iPhone 14` | 390×844 | Safari iOS 16 | 44.439°N, 26.096°E |
+| `Pixel 7` | 412×915 | Chrome Android 13 | 44.439°N, 26.096°E |
+| `Urovo` | 360×720 | Chrome Android 12 (DT50_5G) | 44.439°N, 26.096°E |
 
-### Step 3: Add to testng.xml
-```xml
-<test name="My_Tests">
-    <classes>
-        <class name="ro.carrefour.ucare.app.MyTests"/>
-    </classes>
-</test>
-```
-
-### Step 4: Run Tests
+Example:
 ```bash
-mvn clean test
+mvn clean test -Ddevice=Urovo
 ```
+
+All profiles also set `isMobile=true`, `hasTouch=true`, and grant the `geolocation` browser permission automatically.
 
 ---
 
-## 🐛 Debugging & Troubleshooting
+## 🐛 Failure Evidence
 
-### Enable Debug Logging
-```bash
-mvn clean test -X
-```
+On test failure, `EvidenceManager` automatically:
+- Attaches a **full-page screenshot** to the Allure report (in-memory, no disk write)
+- Saves a **Playwright trace** (`.zip`) to `target/evidence/traces/` and attaches a plain-text path note to the Allure report
 
-### Inspect Elements in Browser
-Playwright DevTools:
-```java
-page.context().browser().launch(new BrowserType.LaunchOptions()
-    .setDevtools(true));
-```
+Tracing is started at `@BeforeMethod` with **screenshots**, **DOM snapshots**, and **source files** captured, giving a complete step-by-step replay on failure.
 
-### Screenshot on Failure
-```java
-page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("failure.png")));
-```
+Traces can be opened at [trace.playwright.dev](https://trace.playwright.dev) for step-by-step visual replay.
 
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| **Timeout Errors** | Increase `GLOBAL_TIMEOUT_MS` in BaseTest |
-| **Auth State Not Found** | Run at least one test first to generate state |
-| **Playwright Not Installed** | Run `mvn clean install` |
-| **Port Already in Use** | Restart IDE or change configured port |
+On test **pass**, the open trace is discarded cleanly via `EvidenceManager.discardTrace()` to free browser resources.
 
 ---
 
-## 🚦 Best Practices
+## 📊 Allure Environment Metadata
 
-1. ✅ Use **Page Object Model** - Keep pages separate from tests
-2. ✅ Use **explicit waits** - Don't rely on thread.sleep()
-3. ✅ **Isolate test data** - Each test should be independent
-4. ✅ **Use meaningful locators** - Prefer IDs over CSS selectors
-5. ✅ **Log important actions** - Helps with debugging
-6. ✅ **Clean up resources** - Close browser/context properly
-7. ✅ **Keep tests atomic** - One logical action per test
-8. ✅ **Use assertions wisely** - Assert behavior, not implementation
+The `environment.properties` file (in `src/main/resources/`) is automatically copied into `target/allure-results/` at build time by the `maven-resources-plugin`. It surfaces the following details on the Allure report's **Environment** widget:
 
----
-
-## 📈 Continuous Integration (CI/CD)
-
-### GitHub Actions Example
-```yaml
-name: Playwright Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 11
-      - run: mvn clean test -Dbrowser.headless=true
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: test-results
-          path: target/surefire-reports/
-```
+| Key | Value |
+|---|---|
+| `Country` | Active `-Denv` value (e.g. `ro`, `fr`) |
+| `URL` | Active `app.url` property |
+| `Username` | Active `app.username` property |
+| `Device` | Active `-Ddevice` value |
 
 ---
-
 
 **Maintained By:** Quality Assurance Team
-

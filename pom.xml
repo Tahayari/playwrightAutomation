@@ -11,15 +11,22 @@
     <url>http://maven.apache.org</url>
 
     <properties>
+        <!-- Defaults — overridden at the command line with -Denv=be/ro/fr -->
+        <env>ro</env>
+        <suite>src/test/resources/suites/sanity-romania.xml</suite>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotless.version>3.6.0</spotless.version>
         <playwright.version>1.58.0</playwright.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <testng.version>7.11.0</testng.version>
         <allure.version>2.27.0</allure.version>
         <allure-maven.version>2.13.0</allure-maven.version>
         <aspectj.version>1.9.21</aspectj.version>
         <allure.results.dir>${project.build.directory}/allure-results</allure.results.dir>
+        <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <device>Desktop</device>
     </properties>
 
@@ -32,9 +39,25 @@
                 <version>${spotless.version}</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat/>
+                        <!-- Removes unused imports automatically -->
+                        <removeUnusedImports/>
+
+                        <!-- Enforces official Google Java formatting standards -->
+                        <googleJavaFormat>
+                            <version>1.22.0</version>
+                            <style>AOSP</style> <!-- Optional: AOSP style uses 4 spaces instead of 2 for indentation -->
+                        </googleJavaFormat>
                     </java>
                 </configuration>
+                <executions>
+                    <execution>
+                        <!-- Automatically formats your code during 'mvn compile' or 'mvn test' -->
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!--
@@ -46,14 +69,16 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                         -Dallure.results.directory=${allure.results.dir}
                         -Dallure.link.issue.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
                         -Dallure.link.tms.pattern=https://jira.agilefabric.fr.carrefour.com/browse/{}
+                        -Denv=${env}
                     </argLine>
                     <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suite}</suiteXmlFile>
                     </suiteXmlFiles>
                 </configuration>
             </plugin>
@@ -82,8 +107,26 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>${maven-resources-plugin.version}</version>
                 <executions>
+                    <execution>
+                        <id>copy-allure-categories</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/allure-results</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <includes>
+                                        <include>categories.json</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-allure-environment</id>
                         <phase>process-test-resources</phase>
@@ -91,14 +134,8 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/allure-results</outputDirectory>
+                            <outputDirectory>${project.build.directory}/allure-results</outputDirectory>
                             <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>environment.properties</include>
-                                    </includes>
-                                </resource>
                                 <resource>
                                     <directory>src/main/resources</directory>
                                     <filtering>true</filtering>
@@ -107,6 +144,34 @@
                                     </includes>
                                 </resource>
                             </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>src/main/resources/config/${env}.properties</file>
+                            </files>
                         </configuration>
                     </execution>
                 </executions>

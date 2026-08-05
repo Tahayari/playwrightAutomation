@@ -1,0 +1,29 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="France_Smoke_TestSuite" verbose="1" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.carrefour.ucare.utilities.RetryListener"/>
+    </listeners>
+
+
+    <test name="Homepage_Tests">
+        <classes>
+            <class name="com.carrefour.ucare.e2e.HomePageTests"/>
+        </classes>
+    </test>
+
+    <test name="Item360_Tests">
+        <classes>
+            <class name="com.carrefour.ucare.e2e.france.item360.Item360Tests"/>
+        </classes>
+    </test>
+
+<!--    <test name="StockPage_Tests">-->
+<!--        <classes>-->
+<!--            <class name="com.carrefour.ucare.e2e.StockPageTests"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+
+</suite>
