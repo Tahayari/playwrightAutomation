@@ -14,11 +14,9 @@ import com.carrefour.ucare.utilities.PlaywrightFactory;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import io.qameta.allure.Step;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 
@@ -126,7 +124,8 @@ public class BaseTest {
 
     private void performLogin() {
         BrowserContext loginCtx = PlaywrightFactory.createMobileContext(null, GLOBAL_TIMEOUT_MS);
-        try (loginCtx; Page loginPage = loginCtx.newPage()) {
+        try (loginCtx;
+                Page loginPage = loginCtx.newPage()) {
             loginPage.navigate(configManager.getProperty("app.url"));
 
             LoginPage lp = new LoginPage(loginPage);
@@ -163,10 +162,9 @@ public class BaseTest {
                         case "fr":
                             homePage.assertAllTabsAreDisplayed_FR();
                             break;
-                        // TODO: Belgium
-                        //                        case "be":
-                        //                            homePage.assertAllTabsAreDisplayed_BE();
-                        //                            break;
+                        case "be":
+                            homePage.assertAllTabsAreDisplayed_BE();
+                            break;
                         default:
                             throw new IllegalArgumentException("Unsupported environment: " + env);
                     }
@@ -175,7 +173,6 @@ public class BaseTest {
                 });
     }
 
-    //  @Step("Search for product: {id}")
     protected void searchProduct(String id) {
         step(
                 "Search for product with ID: " + id,
