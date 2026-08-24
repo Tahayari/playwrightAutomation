@@ -124,8 +124,8 @@ public class BaseTest {
 
     private void performLogin() {
         BrowserContext loginCtx = PlaywrightFactory.createMobileContext(null, GLOBAL_TIMEOUT_MS);
-        Page loginPage = loginCtx.newPage();
-        try {
+        try (loginCtx;
+                Page loginPage = loginCtx.newPage()) {
             loginPage.navigate(configManager.getProperty("app.url"));
 
             LoginPage lp = new LoginPage(loginPage);
@@ -141,9 +141,6 @@ public class BaseTest {
                     new BrowserContext.StorageStateOptions().setPath(Paths.get(AUTH_STATE_PATH)));
         } catch (IOException e) {
             throw new RuntimeException("Critical: failed to save authentication session.", e);
-        } finally {
-            loginPage.close();
-            loginCtx.close();
         }
     }
 
@@ -153,7 +150,7 @@ public class BaseTest {
 
     @Step("Verify home page is fully loaded")
     protected void verifyHomePage() {
-        String env = System.getProperty("env").toLowerCase();
+        String env = System.getProperty("env", "ro").toLowerCase();
 
         step(
                 "Verify home page main elements are visible",
@@ -165,10 +162,9 @@ public class BaseTest {
                         case "fr":
                             homePage.assertAllTabsAreDisplayed_FR();
                             break;
-                            // TODO: Belgium
-                            //                        case "be":
-                            //                            homePage.assertAllTabsAreDisplayed_BE();
-                            //                            break;
+                        case "be":
+                            homePage.assertAllTabsAreDisplayed_BE();
+                            break;
                         default:
                             throw new IllegalArgumentException("Unsupported environment: " + env);
                     }
@@ -177,7 +173,6 @@ public class BaseTest {
                 });
     }
 
-    //  @Step("Search for product: {id}")
     protected void searchProduct(String id) {
         step(
                 "Search for product with ID: " + id,

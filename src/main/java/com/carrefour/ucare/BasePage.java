@@ -57,10 +57,21 @@ public class BasePage {
         assertThat(page.locator(PRODUCT_SEARCH_INPUT)).isVisible();
     }
 
+    // ── Assertions FRANCE-ONLY ───────────────────────────────────────────
     public void assertAllTabsAreDisplayed_FR() {
         assertThat(page.locator(HOME_FOOTER_MENU)).isVisible();
         assertThat(page.locator(STOCK_FOOTER_MENU)).isVisible();
         assertThat(page.locator(PRICE_FOOTER_MENU)).isVisible();
+        assertThat(page.locator(PRODUCT_SEARCH_INPUT)).isVisible();
+    }
+
+    // ── Assertions BELGIUM-ONLY ───────────────────────────────────────────
+    public void assertAllTabsAreDisplayed_BE() {
+        assertThat(page.locator(HOME_FOOTER_MENU)).isVisible();
+        assertThat(page.locator(STOCK_FOOTER_MENU)).isVisible();
+        assertThat(page.locator(ME_FOOTER_MENU)).isVisible();
+        assertThat(page.locator(PRICE_FOOTER_MENU)).isVisible();
+        assertThat(page.locator(NOTIFICATIONS_FOOTER_MENU)).isVisible();
         assertThat(page.locator(PRODUCT_SEARCH_INPUT)).isVisible();
     }
 }
