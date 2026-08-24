@@ -21,7 +21,7 @@
 
 <!--    <test name="StockPage_Tests">-->
 <!--        <classes>-->
-<!--            <class name="com.carrefour.ucare.e2e.StockPageTests"/>-->
+<!--            <class name="com.carrefour.ucare.e2e.france.stock.StockPageTests"/>-->
 <!--        </classes>-->
 <!--    </test>-->
 

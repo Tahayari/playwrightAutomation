@@ -16,6 +16,9 @@ public class Item360Page extends BasePage {
     private static final String ITEM_STOCK_ID = "#stock-badge";
     private static final String PRESENTATION_FACING_ID = "#presentationFacing";
     private static final String SHELF_CAPACITY_ID = "#capacity";
+    private static final String WIDTH_ID = "#width";
+    private static final String HEIGHT_ID = "#height";
+    private static final String DEPTH_ID = "#depth";
 
     private static final String PRICE_TAB_ID = "#tab-0-price-tab";
     private static final String STOCK_TAB_ID = "#tab-1-stock-tab";
@@ -76,5 +79,24 @@ public class Item360Page extends BasePage {
         assertThat(page.locator(DETAILS_TAB_ID)).isVisible();
         assertThat(page.locator(MERCH_TAB_ID)).isVisible();
         assertThat(page.locator(RECOMMENDED_PRICE_ID)).isVisible();
+    }
+
+    // ── Assertions BELGIUM-ONLY ───────────────────────────────────────────
+
+    public void assertItem360PageElements_BE() {
+        assertThat(page.locator(PRODUCT_GTIN_ID)).isVisible();
+        assertThat(page.locator(PRODUCT_INTERNAL_CODE_ID)).isVisible();
+        assertThat(page.locator(PRODUCT_STATUS_ID)).isVisible();
+        assertThat(page.locator(ITEM_STOCK_ID)).isVisible();
+        assertThat(page.locator(PRESENTATION_FACING_ID)).isVisible();
+        assertThat(page.locator(WIDTH_ID)).isVisible();
+        assertThat(page.locator(HEIGHT_ID)).isVisible();
+        assertThat(page.locator(PRICE_TAB_ID)).isVisible();
+        assertThat(page.locator(STOCK_TAB_ID)).isVisible();
+        assertThat(page.locator(DETAILS_TAB_ID)).isVisible();
+        assertThat(page.locator(MERCH_TAB_ID)).isVisible();
+        assertThat(page.locator(PERMANENT_PRICE_ID)).isVisible();
+        assertThat(page.locator(GO_TO_PRICE_AUDIT_ID)).isVisible();
+        assertThat(page.locator(GO_TO_LABEL_MGMT_ID)).isVisible();
     }
 }
