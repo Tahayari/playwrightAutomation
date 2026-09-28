@@ -25,6 +25,16 @@ public class HomePage extends BasePage {
 
     public void logoutFromSideMenu() {
         page.locator(LOGOUT_ID).click();
-        page.waitForURL("**ppd.np.idp.carrefour.com**");
+        String env = System.getProperty("env").toLowerCase();
+
+        switch (env) {
+            case "be":
+                page.waitForURL("**signin/accountchooser**");
+                break;
+            case "ro":
+            case "fr":
+                page.waitForURL("**ppd.np.idp.carrefour.com**");
+                break;
+        }
     }
 }
